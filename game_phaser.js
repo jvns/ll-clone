@@ -129,7 +129,7 @@ class MainScene extends Phaser.Scene {
         this.score += 1;
         this.scoreText.setText(`Score: ${this.score}`);
 
-        this.spawnManager.update();
+        this.spawnManager.update(this.obstacles);
         this.renderSpawns();
     }
 
@@ -345,33 +345,76 @@ class SpawnManager {
         ]);
     }
 
-    update(deltaTime) {
+    update(obstacles) {
         // Check and spawn for each darling type
         for (const [darlingType, config] of this.spawnConfigs) {
-            this.updateDarlingType(darlingType, config, deltaTime);
+            this.updateDarlingType(darlingType, config, obstacles);
         }
 
         // Update existing spawns
-        this.updateActiveSpawns(deltaTime);
+        this.updateActiveSpawns();
     }
 
-    updateDarlingType(darlingType, config, deltaTime) {
-        const lastSpawnTime = this.lastSpawnTimes.get(darlingType) || 0;
-        const currentTime = Date.now();
 
-        // Calculate spawn interval with random variation
-        const randomSpacing = Math.floor(
-            Math.random() *
-            (config.randomSpacingRange.max - config.randomSpacingRange.min) +
-            config.randomSpacingRange.min
+    updateDarlingType(darlingType, config, obstacles) {
+        const spawnY = config.laneRules.spawnPosition.y * GRID_SIZE;
+        const spawnX = config.laneRules.spawnPosition.x * GRID_SIZE;
+
+        // Check if we have enough space to spawn
+        const canSpawn = this.hasEnoughSpace(
+            spawnX,
+            spawnY,
+            config.baseSpacing * 50,
+            config.laneRules.direction,
+            darlingType, obstacles
         );
 
-        const spawnInterval = (config.baseSpacing + randomSpacing) * 1000;
-
-        if (currentTime - lastSpawnTime > spawnInterval) {
+        if (canSpawn) {
             this.spawn(darlingType, config);
-            this.lastSpawnTimes.set(darlingType, currentTime);
         }
+    }
+
+    hasEnoughSpace(spawnX, spawnY, minDistance, direction, darlingType, obstacles) {
+        // Convert spawn position to pixels
+        const spawnYPixels = spawnY * GRID_SIZE;
+
+        // iterate over obstacles
+        for (const obstacle of obstacles.children.entries) {
+            // Only check obstacles in the same lane (with some tolerance)
+            const xDiff = Math.abs(obstacle.x - spawnX);
+            if (xDiff > GRID_SIZE) continue;
+
+            // Calculate distance based on direction of movement
+            let distance;
+            if (direction > 0) { // Moving down
+                distance = obstacle.y - spawnYPixels;
+
+                // Don't spawn if there's an obstacle too close ahead
+                if (distance > 0 && distance < minDistance * GRID_SIZE ) {
+                    return false;
+                }
+
+                // Check for obstacles behind
+                if (distance < 0 && Math.abs(distance) < (minDistance * GRID_SIZE * 0.5)) {
+                    return false;
+                }
+            } else { // Moving up
+                distance = spawnYPixels - obstacle.y;
+
+                // Don't spawn if there's an obstacle too close ahead
+                if (distance > 0 && distance < minDistance * GRID_SIZE + obstacle.body.height) {
+                    return false;
+                }
+
+                // Check for obstacles behind
+                if (distance < 0 && Math.abs(distance) < (minDistance * GRID_SIZE * 0.5)) {
+                    return false;
+                }
+            }
+        }
+
+        // Add some randomness to prevent predictable spawning
+        return Math.random() < 0.7; // 40% chance to spawn when space is available
     }
 
     spawn(darlingType, config) {
@@ -396,7 +439,7 @@ class SpawnManager {
         return newSpawn;
     }
 
-    updateActiveSpawns(deltaTime) {
+    updateActiveSpawns() {
         for (const [darlingType, spawns] of this.activeSpawns) {
             const config = this.spawnConfigs.get(darlingType);
 
