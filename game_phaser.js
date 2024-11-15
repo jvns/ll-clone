@@ -34,8 +34,9 @@ class MainScene extends Phaser.Scene {
         // Simplified game state - only track what's needed
         this.score = 0;
         this.isGameOver = false;
-        this.moveTimer = 0;
-        this.moveDelay = 50; // Delay between moves in milliseconds
+        this.leftMoveTimer = 0;
+        this.rightMoveTimer = 0;
+        this.moveDelay = 200; // Delay between moves in milliseconds
     }
 
     create() {
@@ -101,15 +102,24 @@ class MainScene extends Phaser.Scene {
             }
             return;
         }
-        if (time > this.moveTimer) {
-            this.moveTimer = time + this.moveDelay;
+        if (time > this.leftMoveTimer) {
+            this.leftMoveTimer = time + this.moveDelay;
             if (this.cursors.left.isDown && this.bicycle.x > 0) {
                 this.bicycle.x -= GRID_SIZE;
             }
-            else if (this.cursors.right.isDown && this.bicycle.x < GAME_WIDTH - GRID_SIZE) {
+        }
+        if (time > this.rightMoveTimer) {
+            if (this.cursors.right.isDown && this.bicycle.x < GAME_WIDTH - GRID_SIZE) {
                 this.bicycle.x += GRID_SIZE;
-                this.moveTimer = time + this.moveDelay;
+                this.rightMoveTimer = time + this.moveDelay;
             }
+        }
+
+        if (this.cursors.left.isUp) {
+            this.leftMoveTimer = 0;
+        }
+        if (this.cursors.right.isUp) {
+            this.rightMoveTimer = 0;
         }
     }
 
