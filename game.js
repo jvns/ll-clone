@@ -108,10 +108,94 @@ class BicycleGame {
 
         // Setup keyboard controls
         this.setupControls();
+        this.setupGameOverText();
+    }
+
+    setupGameOverText() {
+        // Add game over text (hidden initially)
+        this.gameOverText = new PIXI.Text('GAME OVER\nPress SPACE to restart', {
+            fontFamily: FONT,
+            fontSize: GRID_SIZE * 2,
+            fill: '#FF0000',
+            align: 'center'
+        });
+        this.gameOverText.anchor.set(0.5);
+        this.gameOverText.position.set(GAME_WIDTH / 2, GAME_HEIGHT / 2);
+        this.gameOverText.visible = false;
+        this.gameContainer.addChild(this.gameOverText);
+    }
+
+    gameOver() {
+        this.gameState.isGameOver = true;
+        this.gameOverText.visible = true;
+        this.bicycle.tint = 0xFF0000; // Turn bicycle red
+    }
+
+    restartGame() {
+        // Reset game state
+        this.gameState = {
+            position: { x: 5, y: 8 },
+            frame: 0,
+            score: 0,
+            obstacles: [],
+            isGameOver: false
+        };
+
+        // Reset visual elements
+        this.gameOverText.visible = false;
+        this.bicycle.tint = 0xFFFFFF; // Reset bicycle color
+        this.scoreText.text = 'Score: 0';
+
+        // Clear all spawns
+        this.spawnManager.clearSpawns();
+    }
+
+    checkCollisions() {
+        if (this.gameState.isGameOver) return;
+
+        const bikeHitbox = {
+            x: this.gameState.position.x,
+            y: this.gameState.position.y,
+            width: 1,  // Assuming bike is 1 grid unit wide
+            height: 1  // Assuming bike is 1 grid unit tall
+        };
+
+        const activeSpawns = this.spawnManager.getActiveSpawns();
+        for (const [darlingType, spawns] of activeSpawns) {
+            // Skip buildings and other non-dangerous objects
+            if (darlingType === DarlingType.BUILDING) continue;
+
+            for (const spawn of spawns) {
+                const spawnHitbox = {
+                    x: spawn.position.x,
+                    y: spawn.position.y,
+                    width: 1,  // Adjust based on actual sprite size
+                    height: 1  // Adjust based on actual sprite size
+                };
+
+                if (this.detectHitboxCollision(bikeHitbox, spawnHitbox)) {
+                    this.gameOver();
+                    return;
+                }
+            }
+        }
+    }
+
+    detectHitboxCollision(hitboxA, hitboxB) {
+        return hitboxA.x < hitboxB.x + hitboxB.width &&
+               hitboxA.x + hitboxA.width > hitboxB.x &&
+               hitboxA.y < hitboxB.y + hitboxB.height &&
+               hitboxA.y + hitboxA.height > hitboxB.y;
     }
 
     setupControls() {
         window.addEventListener('keydown', (e) => {
+            if (this.gameState.isGameOver) {
+                if (e.code === 'Space') {
+                    this.restartGame();
+                }
+                return;
+            }
             switch(e.key) {
                 case 'ArrowLeft':
                     if (this.gameState.position.x > 0) {
@@ -208,6 +292,7 @@ class BicycleGame {
 
         this.spawnManager.update(deltaTime);
         this.renderSpawns();
+        this.checkCollisions();
     }
 }
 
