@@ -31,55 +31,16 @@ class BicycleGame extends Phaser.Game {
 class MainScene extends Phaser.Scene {
     constructor() {
         super({ key: 'MainScene' });
-        this.gameState = {
-            position: { x: 5, y: 8 },
-            frame: 0,
-            score: 0,
-            obstacles: [],
-            isGameOver: false
-        };
+        // Simplified game state - only track what's needed
+        this.score = 0;
+        this.isGameOver = false;
     }
 
     create() {
-        // Create game elements containers
-        this.gameContainer = this.add.container(0, 0);
-        this.tracksContainer = this.add.container(0, 0);
-        this.spawnContainer = this.add.container(0, 0);
-
-        // Create physics groups
-        this.obstacles = this.physics.add.group();
-
-        // Setup game elements
-        this.setupGame();
-        this.spawnManager = new SpawnManager(this);
-
-        // Create score display
-        this.scoreText = this.add.text(10, 10, 'Score: 0', {
-            fontFamily: FONT,
-            fontSize: GRID_SIZE,
-            color: '#00FF00'
-        });
-
-        // Setup controls
-        this.cursors = this.input.keyboard.createCursorKeys();
-        this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-
-        // Set game speed
-        this.time.addEvent({
-            delay: 1000 / GAME_SPEED,
-            callback: this.gameLoop,
-            callbackScope: this,
-            loop: true
-        });
-        this.moveTimer = 0;
-        this.moveDelay = 150; // Delay between moves in milliseconds
-    }
-
-    setupGame() {
-        // Create bicycle as a physics sprite
+        // Create bicycle and enable physics in one step
         this.bicycle = this.add.text(
-            this.gameState.position.x * GRID_SIZE,
-            this.gameState.position.y * GRID_SIZE,
+            5 * GRID_SIZE,
+            8 * GRID_SIZE,
             DARLINGS.BIKE.art.join("\n"),
             {
                 fontFamily: FONT,
@@ -87,52 +48,24 @@ class MainScene extends Phaser.Scene {
                 color: '#00FF00'
             }
         );
-
-        // Enable physics on the bicycle
         this.physics.world.enable(this.bicycle);
-
-        // Set the bicycle's collision body size
         this.bicycle.body.setSize(GRID_SIZE * 2, GRID_SIZE * 2.5);
 
-        // Setup collision detection
-        this.physics.add.collider(this.bicycle, this.obstacles, (bicycle, obstacle) => {
-            this.gameOver();
+        // Simplified obstacle group setup
+        this.obstacles = this.physics.add.group();
+
+        // Direct collision setup
+        this.physics.add.collider(this.bicycle, this.obstacles, () => {
+            if (!this.isGameOver) this.gameOver();
         });
 
-        this.setupTracks();
-        this.setupGameOverText();
-    }
-
-    setupTracks() {
-        // Create road lines
-        const roadLinePositions = [GRID_SIZE * 8, GRID_SIZE * 9];
-        roadLinePositions.forEach(x => {
-            const roadLine = this.add.text(x, 0, '‖\n'.repeat(60), {
-                fontFamily: FONT,
-                fontSize: GRID_SIZE,
-                color: '#fbfb00',
-                lineHeight: 16
-            });
-            this.tracksContainer.add(roadLine);
+        // UI elements
+        this.scoreText = this.add.text(10, 10, 'Score: 0', {
+            fontFamily: FONT,
+            fontSize: GRID_SIZE,
+            color: '#00FF00'
         });
 
-        // Create TTC tracks
-        const ttcTrackPositions = [
-            (CONFIG.LANES.TRACKS + 1) * GRID_SIZE,
-            (CONFIG.LANES.TRACKS + 3) * GRID_SIZE
-        ];
-        ttcTrackPositions.forEach(x => {
-            const track = this.add.text(x, 0, '‖\n'.repeat(60), {
-                fontFamily: FONT,
-                fontSize: GRID_SIZE,
-                color: '#444444',
-                lineHeight: 16
-            });
-            this.tracksContainer.add(track);
-        });
-    }
-
-    setupGameOverText() {
         this.gameOverText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2,
             'GAME OVER\nPress SPACE to restart', {
                 fontFamily: FONT,
@@ -140,134 +73,108 @@ class MainScene extends Phaser.Scene {
                 color: '#FF0000',
                 align: 'center'
             }
-        );
-        this.gameOverText.setOrigin(0.5);
-        this.gameOverText.setVisible(false);
-    }
+        ).setOrigin(0.5).setVisible(false);
 
-    gameOver() {
-        if (this.gameState.isGameOver) return;
+        // Controls
+        this.cursors = this.input.keyboard.createCursorKeys();
+        this.spaceKey = this.input.keyboard.addKey('SPACE');
 
-        this.gameState.isGameOver = true;
-        this.gameOverText.setVisible(true);
-        this.bicycle.setTint(0xFF0000);
+        // Spawn manager
+        this.spawnManager = new SpawnManager(this);
 
-        // Disable physics when game is over
-        this.bicycle.body.enable = false;
-    }
-
-    restartGame() {
-        this.gameState = {
-            position: { x: 5, y: 8 },
-            frame: 0,
-            score: 0,
-            obstacles: [],
-            isGameOver: false
-        };
-
-        this.gameOverText.setVisible(false);
-        this.bicycle.setTint(0xFFFFFF);
-        this.scoreText.setText('Score: 0');
-
-        // Re-enable physics
-        this.bicycle.body.enable = true;
-
-        // Clear all obstacles
-        this.obstacles.clear(true, true);
-        this.spawnManager.clearSpawns();
+        // Game loop
+        this.time.addEvent({
+            delay: 1000 / GAME_SPEED,
+            callback: this.gameLoop,
+            callbackScope: this,
+            loop: true
+        });
     }
 
     update(time, delta) {
-        if (this.gameState.isGameOver) {
+        if (this.isGameOver) {
             if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
-                this.restartGame();
+                this.restart();
             }
             return;
         }
 
-        if (time > this.moveTimer) {
-            if (this.cursors.left.isDown && this.gameState.position.x > 0) {
-                this.gameState.position.x--;
-                this.moveTimer = time + this.moveDelay;
-            }
-            else if (this.cursors.right.isDown &&
-                     this.gameState.position.x < (GAME_WIDTH / GRID_SIZE) - 1) {
-                this.gameState.position.x++;
-                this.moveTimer = time + this.moveDelay;
-            }
+        // Simplified movement logic
+        if (this.cursors.left.isDown && this.bicycle.x > 0) {
+            this.bicycle.x -= GRID_SIZE;
+        }
+        else if (this.cursors.right.isDown && this.bicycle.x < GAME_WIDTH - GRID_SIZE) {
+            this.bicycle.x += GRID_SIZE;
         }
     }
 
+    gameLoop() {
+        if (this.isGameOver) return;
+
+        this.score += 1;
+        this.scoreText.setText(`Score: ${this.score}`);
+
+        this.spawnManager.update();
+        this.renderSpawns();
+    }
+
     renderSpawns() {
-        // Clear previous spawns
         this.obstacles.clear(true, true);
 
-        // Render new spawns
-        const activeSpawns = this.spawnManager.getActiveSpawns();
-        for (const [darlingType, spawns] of activeSpawns) {
-            if (darlingType === DarlingType.BUILDING) continue; // Skip buildings for collision
+        for (const [darlingType, spawns] of this.spawnManager.getActiveSpawns()) {
+            if (darlingType === DarlingType.BUILDING) continue;
 
             spawns.forEach(spawn => {
-                const colours = COLOURS['VEHICLES'];
-                const colour = colours[0];
-
-                let art;
-                switch (darlingType) {
-                    case DarlingType.TTC:
-                        art = DARLINGS.TTC.art;
-                        break;
-                    case DarlingType.TTC_LANE_DEATHMACHINE:
-                        art = DARLINGS.MOVINGDEATHMACHINE.art;
-                        break;
-                    case DarlingType.ONCOMING_DEATHMACHINE:
-                        art = DARLINGS.ONCOMINGDEATHMACHINE.art;
-                        break;
-                    case DarlingType.PARKED_DEATHMACHINE:
-                        art = DARLINGS.DEATHMACHINE.art;
-                        break;
-                    case DarlingType.WANDERER:
-                        art = DARLINGS.WANDERER.UP.art;
-                        break;
-                }
-
-                const spawnText = this.add.text(
+                const art = this.getArtForDarling(darlingType);
+                const obstacle = this.add.text(
                     spawn.position.x * GRID_SIZE,
                     spawn.position.y * GRID_SIZE,
                     art.join("\n"),
                     {
                         fontFamily: FONT,
                         fontSize: GRID_SIZE,
-                        color: colour
+                        color: COLOURS['VEHICLES'][0]
                     }
                 );
 
-                const width = art[0].length - 2;
-                const height = art.length - 1;
-
-                // Enable physics on the spawn and add to obstacles group
-                this.physics.world.enable(spawnText);
-                spawnText.body.setSize(GRID_SIZE * width, GRID_SIZE * height);
-                this.obstacles.add(spawnText);
+                this.physics.world.enable(obstacle);
+                obstacle.body.setSize(
+                    GRID_SIZE * (art[0].length - 2),
+                    GRID_SIZE * (art.length - 1)
+                );
+                this.obstacles.add(obstacle);
             });
         }
     }
 
-    updateBicycle() {
-        this.bicycle.setPosition(
-            this.gameState.position.x * GRID_SIZE,
-            this.gameState.position.y * GRID_SIZE
-        );
-
-        this.gameState.score += 1;
-        this.scoreText.setText(`Score: ${this.gameState.score}`);
+    getArtForDarling(type) {
+        const artMap = {
+            [DarlingType.TTC]: DARLINGS.TTC.art,
+            [DarlingType.TTC_LANE_DEATHMACHINE]: DARLINGS.MOVINGDEATHMACHINE.art,
+            [DarlingType.ONCOMING_DEATHMACHINE]: DARLINGS.ONCOMINGDEATHMACHINE.art,
+            [DarlingType.PARKED_DEATHMACHINE]: DARLINGS.DEATHMACHINE.art,
+            [DarlingType.WANDERER]: DARLINGS.WANDERER.UP.art
+        };
+        return artMap[type];
     }
 
-    gameLoop() {
-        console.log('loop');
-        this.updateBicycle();
-        this.spawnManager.update();
-        this.renderSpawns();
-        // No need for manual collision checking anymore!
+    gameOver() {
+        this.isGameOver = true;
+        this.gameOverText.setVisible(true);
+        this.bicycle.setTint(0xFF0000);
+        this.bicycle.body.enable = false;
+    }
+
+    restart() {
+        this.score = 0;
+        this.isGameOver = false;
+        this.gameOverText.setVisible(false);
+        this.bicycle.setTint(0xFFFFFF);
+        this.bicycle.body.enable = true;
+        this.bicycle.setPosition(5 * GRID_SIZE, 8 * GRID_SIZE);
+        this.scoreText.setText('Score: 0');
+        this.obstacles.clear(true, true);
+        this.spawnManager.clearSpawns();
     }
 }
 
