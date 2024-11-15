@@ -1,5 +1,5 @@
 // Game configuration
-const GRID_SIZE = 15;
+const GRID_SIZE = 10;
 const GAME_HEIGHT = '300';
 const GAME_WIDTH = GRID_SIZE * 20;
 const GAME_SPEED = 3; // frames per second
@@ -59,7 +59,7 @@ class BicycleGame {
 
         // Create TTC tracks (double lines with ties)
         this.ttcTracks = [];
-        const ttcTrackPositions = [CONFIG.LANES.TRACKS * GRID_SIZE, (CONFIG.LANES.TRACKS + 3) * GRID_SIZE];
+        const ttcTrackPositions = [(CONFIG.LANES.TRACKS + 1)  * GRID_SIZE, (CONFIG.LANES.TRACKS + 3) * GRID_SIZE];
 
         for (let x of ttcTrackPositions) {
             const track = new PIXI.Text('‖\n'.repeat(30), {
