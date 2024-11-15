@@ -34,6 +34,8 @@ class MainScene extends Phaser.Scene {
         // Simplified game state - only track what's needed
         this.score = 0;
         this.isGameOver = false;
+        this.moveTimer = 0;
+        this.moveDelay = 50; // Delay between moves in milliseconds
     }
 
     create() {
@@ -81,6 +83,7 @@ class MainScene extends Phaser.Scene {
 
         // Spawn manager
         this.spawnManager = new SpawnManager(this);
+        this.setupTracks();
 
         // Game loop
         this.time.addEvent({
@@ -98,13 +101,15 @@ class MainScene extends Phaser.Scene {
             }
             return;
         }
-
-        // Simplified movement logic
-        if (this.cursors.left.isDown && this.bicycle.x > 0) {
-            this.bicycle.x -= GRID_SIZE;
-        }
-        else if (this.cursors.right.isDown && this.bicycle.x < GAME_WIDTH - GRID_SIZE) {
-            this.bicycle.x += GRID_SIZE;
+        if (time > this.moveTimer) {
+            this.moveTimer = time + this.moveDelay;
+            if (this.cursors.left.isDown && this.bicycle.x > 0) {
+                this.bicycle.x -= GRID_SIZE;
+            }
+            else if (this.cursors.right.isDown && this.bicycle.x < GAME_WIDTH - GRID_SIZE) {
+                this.bicycle.x += GRID_SIZE;
+                this.moveTimer = time + this.moveDelay;
+            }
         }
     }
 
@@ -116,6 +121,36 @@ class MainScene extends Phaser.Scene {
 
         this.spawnManager.update();
         this.renderSpawns();
+    }
+
+    setupTracks() {
+        // Create road lines
+        this.tracksContainer = this.add.container();
+        const roadLinePositions = [GRID_SIZE * 8, GRID_SIZE * 9];
+        roadLinePositions.forEach(x => {
+            const roadLine = this.add.text(x, 0, '‖\n'.repeat(60), {
+                fontFamily: FONT,
+                fontSize: GRID_SIZE,
+                color: '#fbfb00',
+                lineHeight: 16
+            });
+            this.tracksContainer.add(roadLine);
+        });
+
+        // Create TTC tracks
+        const ttcTrackPositions = [
+            (CONFIG.LANES.TRACKS + 1) * GRID_SIZE,
+            (CONFIG.LANES.TRACKS + 3) * GRID_SIZE
+        ];
+        ttcTrackPositions.forEach(x => {
+            const track = this.add.text(x, 0, '‖\n'.repeat(60), {
+                fontFamily: FONT,
+                fontSize: GRID_SIZE,
+                color: '#444444',
+                lineHeight: 16
+            });
+            this.tracksContainer.add(track);
+        });
     }
 
     renderSpawns() {
