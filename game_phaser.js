@@ -45,8 +45,8 @@ function artConfig(color) {
 
 function setupPhysics(scene, textObject) {
     scene.physics.world.enable(textObject);
-    textObject.body.setSize(textObject.width - grid(0.4), textObject.height - grid(0.4));
-    textObject.body.setOffset(grid(0.2), grid(0.2))
+    textObject.body.setSize(textObject.width - grid(0.6), textObject.height);
+    textObject.body.setOffset(grid(0.3), 0);
 }
 
 function distance(obs1, obs2) {
