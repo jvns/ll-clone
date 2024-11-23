@@ -226,7 +226,7 @@ class OncomingDeathMachine extends Phaser.GameObjects.Text {
     }
 
     move() {
-        this.y += grid(1);
+        this.y += grid(2.5);
         if (this.y > GAME_HEIGHT) {
             this.destroy();
         }
@@ -326,6 +326,7 @@ class MainScene extends Phaser.Scene {
         this.spaceKey = this.input.keyboard.addKey('SPACE');
 
         this.setupTracks();
+        this.createInitialSpawns()
 
         // Game loop
         this.time.addEvent({
@@ -334,6 +335,26 @@ class MainScene extends Phaser.Scene {
             callbackScope: this,
             loop: true
         });
+    }
+
+    createInitialSpawns() {
+        this.add.parkeddeathmachine(grid(0))
+        this.add.parkeddeathmachine(grid(12))
+        this.add.parkeddeathmachine(grid(22))
+        this.add.parkeddeathmachine(grid(32))
+        this.add.parkeddeathmachine(grid(48))
+
+        this.add.ttc(grid(9))
+
+        const b1 = this.add.building(grid(0))
+        const b2 = this.add.building(grid(2) + b1.y + b1.height)
+        const b3 = this.add.building(grid(2) + b2.y + b2.height)
+        const b4 = this.add.building(grid(2) + b3.y + b3.height)
+        const b5 = this.add.building(grid(2) + b4.y + b4.height)
+
+        this.add.oncomingdeathmachine(grid(2))
+        this.add.oncomingdeathmachine(grid(12))
+        this.add.oncomingdeathmachine(grid(24))
     }
 
     moveObstacles() {
@@ -408,6 +429,7 @@ function trySpawning(spawn) {
     }
 }
 
+
 function createSpawns(scene) {
     if (Math.random() < 0.4) {
         trySpawning(scene.add.ttc(GAME_HEIGHT))
@@ -417,8 +439,8 @@ function createSpawns(scene) {
     trySpawning(scene.add.oncomingdeathmachine(grid(-5)))
     trySpawning(scene.add.wanderer(grid(-1)));
 
-    trySpawning(scene.add.parkeddeathmachine(grid(-5)));
-    trySpawning(scene.add.building(grid(-8)))
+    trySpawning(scene.add.parkeddeathmachine(grid(-8)));
+    trySpawning(scene.add.building(grid(-12)))
 }
 
 
