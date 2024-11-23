@@ -32,11 +32,6 @@ class BicycleGame extends Phaser.Game {
     }
 }
 
-function setupArtObject(textObject, art) {
-    textObject.setText(art.join("\n"));
-    textObject.setSize(art[0].length * GRID_SIZE * 0.6, art.length * GRID_SIZE * 0.9);
-}
-
 function artConfig(color) {
     return {
         fontFamily: FONT,
@@ -93,8 +88,8 @@ class MovingDeathMachine extends Phaser.GameObjects.Text {
     constructor(scene, y) {
         const x = (CONFIG.LANES.TRACKS - 0.4 ) * GRID_SIZE;
         const colour = pickRandom(COLOURS['VEHICLES']);
-        super(scene, x, y, '', artConfig(colour));
-        setupArtObject(this, DARLINGS.MOVINGDEATHMACHINE.art);
+        const art = DARLINGS.MOVINGDEATHMACHINE.art.join("\n");
+        super(scene, x, y, art, artConfig(colour));
         setupPhysics(scene, this);
         this.minDistance = Math.floor(Math.random() * 4);
     }
@@ -116,8 +111,8 @@ class Wanderer extends Phaser.GameObjects.Text {
     constructor(scene, y) {
         const x = (CONFIG.LANES.SIDEWALK) * GRID_SIZE;
         const colour = 'white';
-        super(scene, x, y, '', artConfig(colour));
-        setupArtObject(this, DARLINGS.WANDERER.UP.art);
+        const art = DARLINGS.WANDERER.UP.art.join("\n");
+        super(scene, x, y, art, artConfig(colour));
         setupPhysics(scene, this);
         this.minDistance = Math.floor(Math.random() * 1);
     }
@@ -139,9 +134,8 @@ class Building extends Phaser.GameObjects.Text {
     constructor(scene, y) {
         const x = (CONFIG.LANES.BUILDINGS) * GRID_SIZE;
         const colour = pickRandom(COLOURS['BUILDINGS']);
-        const building = pickRandom(TORONTO_BUILDINGS);
-        super(scene, x, y, '', artConfig(colour));
-        setupArtObject(this, building.art);
+        const art = pickRandom(TORONTO_BUILDINGS).art.join("\n");
+        super(scene, x, y, art, artConfig(colour));
         setupPhysics(scene, this);
         this.minDistance = 0;
     }
@@ -162,8 +156,8 @@ class ParkedDeathMachine extends Phaser.GameObjects.Text {
     constructor(scene, y) {
         const x = (CONFIG.LANES.PARKED) * GRID_SIZE;
         const colour = pickRandom(COLOURS['VEHICLES']);
-        super(scene, x, y, '', artConfig(colour));
-        setupArtObject(this, DARLINGS.PARKED_DEATHMACHINE_STATES[0])
+        const art = DARLINGS.PARKED_DEATHMACHINE_STATES[0].join("\n");
+        super(scene, x, y, art, artConfig(colour));
         setupPhysics(scene, this);
         this.state = 0;
         this.minDistance = Math.floor(Math.random() * 4);
@@ -184,8 +178,8 @@ Phaser.GameObjects.GameObjectFactory.register('parkeddeathmachine', function (y)
 class TTC extends Phaser.GameObjects.Text {
     constructor(scene, y) {
         const x = (CONFIG.LANES.TRACKS - 1) * GRID_SIZE;
-        super(scene, x, y, '', artConfig('red'));
-        setupArtObject(this, DARLINGS.TTC.art);
+        const art = DARLINGS.TTC.art.join("\n");
+        super(scene, x, y, art, artConfig('red'));
         setupPhysics(scene, this);
         this.minDistance = Math.floor(Math.random() * 4);
     }
@@ -209,8 +203,8 @@ class OncomingDeathMachine extends Phaser.GameObjects.Text {
     constructor (scene, y) {
         const x = (CONFIG.LANES.ONCOMING + 3) * GRID_SIZE;
         const colour = pickRandom(COLOURS['VEHICLES']);
-        super(scene, x, y, '', artConfig(colour));
-        setupArtObject(this, DARLINGS.ONCOMINGDEATHMACHINE.art);
+        const art = DARLINGS.ONCOMINGDEATHMACHINE.art.join("\n");
+        super(scene, x, y, art, artConfig(colour));
         setupPhysics(scene, this);
         this.minDistance = Math.floor(Math.random() * 3);
     }
@@ -229,8 +223,8 @@ Phaser.GameObjects.GameObjectFactory.register('oncomingdeathmachine', function (
 
 class Bicycle extends Phaser.GameObjects.Text {
     constructor (scene, x, y) {
-        super(scene, x, y, '', artConfig('#00FF00'));
-        setupArtObject(this, DARLINGS.BIKE.art);
+        const art = DARLINGS.BIKE.art.join("\n");
+        super(scene, x, y, art, artConfig('#00FF00'));
         this.leftMoveTimer = 0;
         this.rightMoveTimer = 0;
         this.cursors = scene.input.keyboard.createCursorKeys();
