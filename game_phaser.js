@@ -1,7 +1,7 @@
 // Game configuration
-const FONT_SIZE = 18;
+const FONT_SIZE = 14;
 const GAME_HEIGHT = window.innerHeight;
-const GAME_SPEED = 3; // frames per second
+const GAME_SPEED = 4; // frames per second
 const FONT = "Courier New, monospace";
 const MOVEMENT_INTERVAL = 1000 / GAME_SPEED;
 const GRID_SIZE = getCharWidth();
@@ -157,7 +157,7 @@ class Building extends Phaser.GameObjects.Text {
     }
 
     move() {
-        this.y += grid(1);
+        this.y += grid(2);
         if (this.y > GAME_HEIGHT) {
             this.destroy();
         }
@@ -180,7 +180,7 @@ class ParkedDeathMachine extends Phaser.GameObjects.Text {
     }
 
     move() {
-        this.y += grid(1);
+        this.y += grid(2);
         if (this.y > GAME_HEIGHT) {
             this.destroy();
         }
