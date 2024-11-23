@@ -1,7 +1,7 @@
 // Game configuration
 const GRID_SIZE = 18;
 const GAME_HEIGHT = window.innerHeight;
-const GAME_WIDTH = GRID_SIZE * 30;
+const GAME_WIDTH = GRID_SIZE * 42;
 const GAME_SPEED = 3; // frames per second
 const FONT = "Courier New";
 const MOVEMENT_INTERVAL = 1000 / GAME_SPEED;
@@ -92,7 +92,7 @@ function registerObject(factory, obj) {
 class MovingDeathMachine extends Phaser.GameObjects.Text {
     constructor(scene, y) {
         const x = (CONFIG.LANES.TRACKS + 1) * GRID_SIZE;
-        const colour = randomColour(COLOURS['VEHICLES']);
+        const colour = pickRandom(COLOURS['VEHICLES']);
         super(scene, x, y, '', artConfig(colour));
         setupArtObject(this, DARLINGS.MOVINGDEATHMACHINE.art);
         setupPhysics(scene, this);
@@ -101,7 +101,7 @@ class MovingDeathMachine extends Phaser.GameObjects.Text {
 
 
     move() {
-        this.y -= 1.5 * GRID_SIZE;
+        this.y -= 2 * GRID_SIZE;
         if (this.y < -1 * this.height) {
             this.destroy();
         }
@@ -135,12 +135,33 @@ Phaser.GameObjects.GameObjectFactory.register('wanderer', function (y) {
 });
 
 
+class Building extends Phaser.GameObjects.Text {
+    constructor(scene, y) {
+        const x = (CONFIG.LANES.BUILDINGS) * GRID_SIZE;
+        const colour = pickRandom(COLOURS['BUILDINGS']);
+        const building = pickRandom(TORONTO_BUILDINGS);
+        super(scene, x, y, '', artConfig(colour));
+        setupArtObject(this, building.art);
+        setupPhysics(scene, this);
+        this.minDistance = 0;
+    }
 
+    move() {
+        this.y += GRID_SIZE;
+        if (this.y > GAME_HEIGHT) {
+            this.destroy();
+        }
+    }
+}
+
+Phaser.GameObjects.GameObjectFactory.register('building', function (y) {
+    return registerObject(this, new Building(this.scene, y));
+});
 
 class ParkedDeathMachine extends Phaser.GameObjects.Text {
     constructor(scene, y) {
         const x = (CONFIG.LANES.PARKED) * GRID_SIZE;
-        const colour = randomColour(COLOURS['VEHICLES']);
+        const colour = pickRandom(COLOURS['VEHICLES']);
         super(scene, x, y, '', artConfig(colour));
         setupArtObject(this, DARLINGS.PARKED_DEATHMACHINE_STATES[0])
         setupPhysics(scene, this);
@@ -149,8 +170,8 @@ class ParkedDeathMachine extends Phaser.GameObjects.Text {
     }
 
     move() {
-        this.y -= GRID_SIZE;
-        if (this.y < -1 * this.height) {
+        this.y += GRID_SIZE;
+        if (this.y > GAME_HEIGHT) {
             this.destroy();
         }
     }
@@ -170,7 +191,7 @@ class TTC extends Phaser.GameObjects.Text {
     }
 
     move() {
-        this.y -= 1.5 * GRID_SIZE;
+        this.y -= 2 * GRID_SIZE;
         if (this.y < -1 * this.height) {
             this.destroy();
         }
@@ -180,14 +201,14 @@ Phaser.GameObjects.GameObjectFactory.register('ttc', function (y) {
     return registerObject(this, new TTC(this.scene, y));
 });
 
-function randomColour(list) {
+function pickRandom(list) {
     return list[Math.floor(Math.random() * list.length)];
 }
 
 class OncomingDeathMachine extends Phaser.GameObjects.Text {
     constructor (scene, y) {
         const x = (CONFIG.LANES.ONCOMING + 3) * GRID_SIZE;
-        const colour = randomColour(COLOURS['VEHICLES']);
+        const colour = pickRandom(COLOURS['VEHICLES']);
         super(scene, x, y, '', artConfig(colour));
         setupArtObject(this, DARLINGS.ONCOMINGDEATHMACHINE.art);
         setupPhysics(scene, this);
@@ -387,14 +408,16 @@ function trySpawning(spawn) {
 }
 
 function createSpawns(scene) {
-    if (Math.random() < 0.8) {
+    if (Math.random() < 0.3) {
         trySpawning(scene.add.ttc(GAME_HEIGHT))
     } else {
         trySpawning(scene.add.movingdeathmachine(GAME_HEIGHT))
     }
-    trySpawning(scene.add.parkeddeathmachine(GAME_HEIGHT))
     trySpawning(scene.add.oncomingdeathmachine(-GRID_SIZE * 5))
     trySpawning(scene.add.wanderer(-GRID_SIZE * 1))
+
+    trySpawning(scene.add.parkeddeathmachine(-GRID_SIZE * 5))
+    trySpawning(scene.add.building(-GRID_SIZE * 8))
 }
 
 
