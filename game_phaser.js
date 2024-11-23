@@ -1,5 +1,5 @@
 // Game configuration
-const GRID_SIZE = 10;
+const GRID_SIZE = 18;
 const GAME_HEIGHT = 600;
 const GAME_WIDTH = GRID_SIZE * 30;
 const GAME_SPEED = 3; // frames per second
@@ -20,13 +20,133 @@ class BicycleGame extends Phaser.Game {
             },
             scene: MainScene,
             scale: {
-                mode: Phaser.Scale.NONE,
-                autoCenter: Phaser.Scale.CENTER_BOTH
+                mode: Phaser.Scale.FIT,
+                autoCenter: Phaser.Scale.CENTER_BOTH,
+                parent: 'game-container',
+                width: GAME_WIDTH,
+                height: GAME_HEIGHT
             }
         };
         super(config);
     }
 }
+
+function setupArtObject(textObject, art) {
+    textObject.setText(art.join("\n"));
+    textObject.setSize(art[0].length * GRID_SIZE * 0.6, art.length * GRID_SIZE * 0.9);
+}
+
+function artConfig(color) {
+    return {
+        fontFamily: FONT,
+        fontSize: GRID_SIZE,
+        color: color
+    };
+}
+
+function setupPhysics(scene, textObject) {
+    scene.physics.world.enable(textObject);
+    textObject.body.setSize(textObject.width, textObject.height);
+}
+
+
+class TTC extends Phaser.GameObjects.Text {
+    constructor(scene, y) {
+        const x = (CONFIG.LANES.TRACKS + 1) * GRID_SIZE;
+        super(scene, x, y, '', artConfig('red'));
+        setupArtObject(this, DARLINGS.TTC.art);
+        setupPhysics(scene, this);
+        this.moveDelay = 300;
+        this.nextMoveTime = 0;
+    }
+
+    preUpdate(time, _delta) {
+        if (time > this.nextMoveTime) {
+            this.y -= GRID_SIZE;
+            this.nextMoveTime = time + this.moveDelay;
+        }
+        if (this.y < -1 * this.height) {
+            this.destroy();
+            console.log('destroyed');
+        }
+    }
+}
+
+function registerObject(factory, obj) {
+    factory.displayList.add(obj);
+    factory.updateList.add(obj);  // This line adds it to the update list
+    factory.scene.obstacles.add(obj);
+    return obj;
+}
+
+Phaser.GameObjects.GameObjectFactory.register('ttc', function (y) {
+    return registerObject(this, new TTC(this.scene, y));
+});
+
+
+class OncomingDeathMachine extends Phaser.GameObjects.Text {
+    constructor (scene, y) {
+        const x = CONFIG.LANES.ONCOMING * GRID_SIZE;
+        super(scene, x, y, '', artConfig('blue'));
+        setupArtObject(this, DARLINGS.ONCOMINGDEATHMACHINE.art);
+        setupPhysics(scene, this);
+        this.moveDelay = 200;
+        this.nextMoveTime = 0;
+    }
+
+    preUpdate (time, _delta) {
+        if (time > this.nextMoveTime) {
+            this.y += GRID_SIZE;
+            this.nextMoveTime = time + this.moveDelay;
+        }
+        if (this.y > GAME_HEIGHT) {
+            this.destroy();
+        }
+    }
+}
+
+Phaser.GameObjects.GameObjectFactory.register('oncomingdeathmachine', function (y) {
+    return registerObject(this, new OncomingDeathMachine(this.scene, y));
+});
+
+class Bicycle extends Phaser.GameObjects.Text {
+    constructor (scene, x, y) {
+        super(scene, x, y, '', artConfig('#00FF00'));
+        setupArtObject(this, DARLINGS.BIKE.art);
+        this.leftMoveTimer = 0;
+        this.rightMoveTimer = 0;
+        this.cursors = scene.input.keyboard.createCursorKeys();
+    }
+
+    preUpdate (time, _delta) {
+        if (time > this.leftMoveTimer) {
+            this.leftMoveTimer = time + this.moveDelay;
+            if (this.cursors.left.isDown && this.x > 0) {
+                this.x -= GRID_SIZE;
+            }
+        }
+        if (time > this.rightMoveTimer) {
+            if (this.cursors.right.isDown && this.x < GAME_WIDTH - GRID_SIZE) {
+                this.x += GRID_SIZE;
+                this.rightMoveTimer = time + this.moveDelay;
+            }
+        }
+
+        if (this.cursors.left.isUp) {
+            this.leftMoveTimer = 0;
+        }
+        if (this.cursors.right.isUp) {
+            this.rightMoveTimer = 0;
+        }
+    }
+}
+
+Phaser.GameObjects.GameObjectFactory.register('bicycle', function (x, y) {
+    const obj = new Bicycle(this.scene, x, y);
+    this.displayList.add(obj);
+    this.updateList.add(obj);
+    return obj;
+});
 
 class MainScene extends Phaser.Scene {
     constructor() {
@@ -34,28 +154,20 @@ class MainScene extends Phaser.Scene {
         // Simplified game state - only track what's needed
         this.score = 0;
         this.isGameOver = false;
-        this.leftMoveTimer = 0;
-        this.rightMoveTimer = 0;
         this.moveDelay = 200; // Delay between moves in milliseconds
     }
 
     create() {
-        // Create bicycle and enable physics in one step
-        this.bicycle = this.add.text(
-            5 * GRID_SIZE,
-            8 * GRID_SIZE,
-            DARLINGS.BIKE.art.join("\n"),
-            {
-                fontFamily: FONT,
-                fontSize: GRID_SIZE,
-                color: '#00FF00'
-            }
-        );
+        // Create bicycle and enable physics for it
+        this.bicycle = this.add.bicycle(5 * GRID_SIZE, 12 * GRID_SIZE);
         this.physics.world.enable(this.bicycle);
-        this.bicycle.body.setSize(GRID_SIZE * 2, GRID_SIZE * 2.5);
+        this.bicycle.body.setSize(this.bicycle.width, this.bicycle.height);
 
         // Simplified obstacle group setup
         this.obstacles = this.physics.add.group();
+
+        this.add.ttc(GAME_HEIGHT- GRID_SIZE* 10);
+        this.add.oncomingdeathmachine(-10);
 
         // Direct collision setup
         this.physics.add.collider(this.bicycle, this.obstacles, () => {
@@ -79,11 +191,10 @@ class MainScene extends Phaser.Scene {
         ).setOrigin(0.5).setVisible(false);
 
         // Controls
-        this.cursors = this.input.keyboard.createCursorKeys();
         this.spaceKey = this.input.keyboard.addKey('SPACE');
 
         // Spawn manager
-        this.spawnManager = new SpawnManager(this);
+        //this.spawnManager = new SpawnManager(this);
         this.setupTracks();
 
         // Game loop
@@ -95,31 +206,12 @@ class MainScene extends Phaser.Scene {
         });
     }
 
-    update(time, delta) {
+    update(time, _delta) {
         if (this.isGameOver) {
             if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
                 this.restart();
             }
             return;
-        }
-        if (time > this.leftMoveTimer) {
-            this.leftMoveTimer = time + this.moveDelay;
-            if (this.cursors.left.isDown && this.bicycle.x > 0) {
-                this.bicycle.x -= GRID_SIZE;
-            }
-        }
-        if (time > this.rightMoveTimer) {
-            if (this.cursors.right.isDown && this.bicycle.x < GAME_WIDTH - GRID_SIZE) {
-                this.bicycle.x += GRID_SIZE;
-                this.rightMoveTimer = time + this.moveDelay;
-            }
-        }
-
-        if (this.cursors.left.isUp) {
-            this.leftMoveTimer = 0;
-        }
-        if (this.cursors.right.isUp) {
-            this.rightMoveTimer = 0;
         }
     }
 
@@ -129,8 +221,8 @@ class MainScene extends Phaser.Scene {
         this.score += 1;
         this.scoreText.setText(`Score: ${this.score}`);
 
-        this.spawnManager.update(this.obstacles);
-        this.renderSpawns();
+        //this.spawnManager.update(this.obstacles);
+        //this.renderSpawns();
     }
 
     setupTracks() {
@@ -205,6 +297,7 @@ class MainScene extends Phaser.Scene {
 
     gameOver() {
         this.isGameOver = true;
+        // clear update list
         this.gameOverText.setVisible(true);
         this.bicycle.setTint(0xFF0000);
         this.bicycle.body.enable = false;
@@ -223,126 +316,13 @@ class MainScene extends Phaser.Scene {
     }
 }
 
+
 class SpawnManager {
     constructor() {
         this.spawnConfigs = new Map();
         this.activeSpawns = new Map();
         this.lastSpawnTimes = new Map();
-        this.config = CONFIG;
-        this.spawnConfigs = this.createSpawnConfigRulesForAllDarlingTypes();
-    }
-
-    createSpawnConfigRulesForAllDarlingTypes() {
-        return new Map([
-            [
-                DarlingType.TTC,
-                {
-                    baseSpacing: this.config.SAFE_DISTANCE.TTC,
-                    randomSpacingRange: {
-                        min: Math.floor(this.config.SAFE_DISTANCE.TTC * 0.3),
-                        max: Math.floor(this.config.SAFE_DISTANCE.TTC * 0.8),
-                    },
-                    laneRules: {
-                        allowedLanes: [this.config.LANES.TRACKS],
-                        spawnPosition: {
-                            x: this.config.LANES.TRACKS,
-                            y: this.config.GAME.HEIGHT + 5,
-                        },
-                        direction: -1,
-                    },
-                },
-            ],
-            [
-                DarlingType.TTC_LANE_DEATHMACHINE,
-                {
-                    baseSpacing: this.config.SAFE_DISTANCE.TTC_LANE_DEATHMACHINE,
-                    randomSpacingRange: {
-                        min: Math.floor(this.config.SAFE_DISTANCE.TTC_LANE_DEATHMACHINE * 0.3),
-                        max: Math.floor(this.config.SAFE_DISTANCE.TTC_LANE_DEATHMACHINE * 0.8),
-                    },
-                    laneRules: {
-                        allowedLanes: [this.config.LANES.TRACKS + 1],
-                        spawnPosition: {
-                            x: this.config.LANES.TRACKS + 1,
-                            y: this.config.GAME.HEIGHT + 1,
-                        },
-                        direction: -1,
-                    },
-                },
-            ],
-            [
-                DarlingType.ONCOMING_DEATHMACHINE,
-                {
-                    baseSpacing: this.config.SAFE_DISTANCE.ONCOMING_DEATHMACHINE,
-                    randomSpacingRange: {
-                        min: Math.floor(this.config.SAFE_DISTANCE.ONCOMING_DEATHMACHINE * 0.3),
-                        max: Math.floor(this.config.SAFE_DISTANCE.ONCOMING_DEATHMACHINE * 0.8),
-                    },
-                    laneRules: {
-                        allowedLanes: [this.config.LANES.ONCOMING],
-                        spawnPosition: {
-                            x: this.config.LANES.ONCOMING,
-                            y: -10,
-                        },
-                        direction: 1,
-                    },
-                },
-            ],
-            [
-                DarlingType.PARKED_DEATHMACHINE,
-                {
-                    baseSpacing: this.config.SAFE_DISTANCE.PARKED,
-                    randomSpacingRange: {
-                        min: 0,
-                        max: Math.floor(this.config.SAFE_DISTANCE.PARKED * 0.2),
-                    },
-                    laneRules: {
-                        allowedLanes: [this.config.LANES.PARKED],
-                        spawnPosition: {
-                            x: this.config.LANES.PARKED,
-                            y: -5,
-                        },
-                        direction: 1,
-                    },
-                },
-            ],
-            [
-                DarlingType.WANDERER,
-                {
-                    baseSpacing: this.config.SAFE_DISTANCE.WANDERER,
-                    randomSpacingRange: {
-                        min: Math.floor(this.config.SAFE_DISTANCE.WANDERER * 0.3),
-                        max: Math.floor(this.config.SAFE_DISTANCE.WANDERER * 0.8),
-                    },
-                    laneRules: {
-                        allowedLanes: [this.config.LANES.SIDEWALK, this.config.LANES.SIDEWALK + 3],
-                        spawnPosition: {
-                            x: this.config.LANES.SIDEWALK,
-                            y: -1,
-                        },
-                        direction: 1,
-                    },
-                },
-            ],
-            [
-                DarlingType.BUILDING,
-                {
-                    baseSpacing: this.config.SAFE_DISTANCE.BUILDING,
-                    randomSpacingRange: {
-                        min: 0,
-                        max: 1,
-                    },
-                    laneRules: {
-                        allowedLanes: [this.config.LANES.BUILDINGS],
-                        spawnPosition: {
-                            x: this.config.LANES.BUILDINGS,
-                            y: this.config.GAME.HEIGHT,
-                        },
-                        direction: -1,
-                    },
-                },
-            ],
-        ]);
+        this.spawnConfigs = SPAWN_RULES;
     }
 
     update(obstacles) {
@@ -355,7 +335,6 @@ class SpawnManager {
         this.updateActiveSpawns();
     }
 
-
     updateDarlingType(darlingType, config, obstacles) {
         const spawnY = config.laneRules.spawnPosition.y * GRID_SIZE;
         const spawnX = config.laneRules.spawnPosition.x * GRID_SIZE;
@@ -364,7 +343,7 @@ class SpawnManager {
         const canSpawn = this.hasEnoughSpace(
             spawnX,
             spawnY,
-            config.baseSpacing * 50,
+            config.baseSpacing * GRID_SIZE,
             config.laneRules.direction,
             darlingType, obstacles
         );
@@ -375,9 +354,6 @@ class SpawnManager {
     }
 
     hasEnoughSpace(spawnX, spawnY, minDistance, direction, darlingType, obstacles) {
-        // Convert spawn position to pixels
-        const spawnYPixels = spawnY * GRID_SIZE;
-
         // iterate over obstacles
         for (const obstacle of obstacles.children.entries) {
             // Only check obstacles in the same lane (with some tolerance)
@@ -387,33 +363,36 @@ class SpawnManager {
             // Calculate distance based on direction of movement
             let distance;
             if (direction > 0) { // Moving down
-                distance = obstacle.y - spawnYPixels;
+                distance = obstacle.y - spawnY;
 
                 // Don't spawn if there's an obstacle too close ahead
-                if (distance > 0 && distance < minDistance * GRID_SIZE ) {
+                if (distance > 0 && distance < minDistance) {
                     return false;
                 }
 
                 // Check for obstacles behind
-                if (distance < 0 && Math.abs(distance) < (minDistance * GRID_SIZE * 0.5)) {
+                if (distance < 0 && Math.abs(distance) < (minDistance * 0.5)) {
                     return false;
                 }
             } else { // Moving up
-                distance = spawnYPixels - obstacle.y;
+                const height = obstacle.body.height;
+                distance = spawnY - obstacle.y - height;
 
                 // Don't spawn if there's an obstacle too close ahead
-                if (distance > 0 && distance < minDistance * GRID_SIZE + obstacle.body.height) {
+                if (distance > 0 && distance < minDistance + obstacle.body.height) {
+                    console.log("too close", distance, darlingType);
                     return false;
                 }
 
                 // Check for obstacles behind
-                if (distance < 0 && Math.abs(distance) < (minDistance * GRID_SIZE * 0.5)) {
+                if (distance < 0 && Math.abs(distance) < (minDistance * 0.5)) {
                     return false;
                 }
             }
         }
 
         // Add some randomness to prevent predictable spawning
+        // console.log("spawn time", darlingType);
         return Math.random() < 0.7; // 40% chance to spawn when space is available
     }
 

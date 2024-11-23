@@ -1,3 +1,4 @@
+
 const CONFIG = {
   GAME: {
     WIDTH: 41,
@@ -192,3 +193,113 @@ class DarlingType {
   static BIKE = "BIKE";
 }
 
+const SPAWN_RULES = new Map([
+  [
+    DarlingType.TTC,
+    {
+      baseSpacing: CONFIG.SAFE_DISTANCE.TTC,
+      randomSpacingRange: {
+        min: Math.floor(CONFIG.SAFE_DISTANCE.TTC * 0.3),
+        max: Math.floor(CONFIG.SAFE_DISTANCE.TTC * 0.8),
+      },
+      laneRules: {
+        allowedLanes: [CONFIG.LANES.TRACKS],
+        spawnPosition: {
+          x: CONFIG.LANES.TRACKS,
+          y: CONFIG.GAME.HEIGHT + 5,
+        },
+        direction: -1,
+      },
+    },
+  ],
+  [
+    DarlingType.TTC_LANE_DEATHMACHINE,
+    {
+      baseSpacing: CONFIG.SAFE_DISTANCE.TTC_LANE_DEATHMACHINE,
+      randomSpacingRange: {
+        min: Math.floor(CONFIG.SAFE_DISTANCE.TTC_LANE_DEATHMACHINE * 0.3),
+        max: Math.floor(CONFIG.SAFE_DISTANCE.TTC_LANE_DEATHMACHINE * 0.8),
+      },
+      laneRules: {
+        allowedLanes: [CONFIG.LANES.TRACKS + 1],
+        spawnPosition: {
+          x: CONFIG.LANES.TRACKS + 1,
+          y: CONFIG.GAME.HEIGHT + 1,
+        },
+        direction: -1,
+      },
+    },
+  ],
+  [
+    DarlingType.ONCOMING_DEATHMACHINE,
+    {
+      baseSpacing: CONFIG.SAFE_DISTANCE.ONCOMING_DEATHMACHINE,
+      randomSpacingRange: {
+        min: Math.floor(CONFIG.SAFE_DISTANCE.ONCOMING_DEATHMACHINE * 0.3),
+        max: Math.floor(CONFIG.SAFE_DISTANCE.ONCOMING_DEATHMACHINE * 0.8),
+      },
+      laneRules: {
+        allowedLanes: [CONFIG.LANES.ONCOMING],
+        spawnPosition: {
+          x: CONFIG.LANES.ONCOMING,
+          y: -10,
+        },
+        direction: 1,
+      },
+    },
+  ],
+  [
+    DarlingType.PARKED_DEATHMACHINE,
+    {
+      baseSpacing: CONFIG.SAFE_DISTANCE.PARKED,
+      randomSpacingRange: {
+        min: 0,
+        max: Math.floor(CONFIG.SAFE_DISTANCE.PARKED * 0.2),
+      },
+      laneRules: {
+        allowedLanes: [CONFIG.LANES.PARKED],
+        spawnPosition: {
+          x: CONFIG.LANES.PARKED,
+          y: -5,
+        },
+        direction: 1,
+      },
+    },
+  ],
+  [
+    DarlingType.WANDERER,
+    {
+      baseSpacing: CONFIG.SAFE_DISTANCE.WANDERER,
+      randomSpacingRange: {
+        min: Math.floor(CONFIG.SAFE_DISTANCE.WANDERER * 0.3),
+        max: Math.floor(CONFIG.SAFE_DISTANCE.WANDERER * 0.8),
+      },
+      laneRules: {
+        allowedLanes: [CONFIG.LANES.SIDEWALK, CONFIG.LANES.SIDEWALK + 3],
+        spawnPosition: {
+          x: CONFIG.LANES.SIDEWALK,
+          y: -1,
+        },
+        direction: 1,
+      },
+    },
+  ],
+  [
+    DarlingType.BUILDING,
+    {
+      baseSpacing: CONFIG.SAFE_DISTANCE.BUILDING,
+      randomSpacingRange: {
+        min: 0,
+        max: 1,
+      },
+      laneRules: {
+        allowedLanes: [CONFIG.LANES.BUILDINGS],
+        spawnPosition: {
+          x: CONFIG.LANES.BUILDINGS,
+          y: CONFIG.GAME.HEIGHT,
+        },
+        direction: -1,
+      },
+    },
+  ],
+]);

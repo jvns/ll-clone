@@ -1,7 +1,7 @@
 // Game configuration
 const GRID_SIZE = 10;
-const GAME_HEIGHT = '300';
-const GAME_WIDTH = GRID_SIZE * 20;
+const GAME_WIDTH = CONFIG.GAME.WIDTH * GRID_SIZE;
+const GAME_HEIGHT = CONFIG.GAME.HEIGHT * GRID_SIZE;
 const GAME_SPEED = 3; // frames per second
 const FONT = "Courier New, monospace";
 
