@@ -1,3 +1,18 @@
+
+// Add a building to LoserLane?
+
+// https://marieflanagan.com/loserlane  
+
+// ~~~Tips:
+// *Max Width 10 characters / max height 9 characters
+// *No Emoji (text only)
+
+// ~~~Notes:
+// *If drawing is scary, send me a building name instead and I’ll try to draw one for you.
+// *If you want to improve an existing drawing, please do!
+
+
+
 const TORONTO_BUILDINGS = [
     {
         name: "PIZZA_PIZZA",
@@ -12,6 +27,7 @@ const TORONTO_BUILDINGS = [
     },
     {
         name: "SAIGON_LOTUS",
+        artist: "mclf",
         art: [
             "┌~~~~~~~─┐",
             "│~~SAIGON│",
@@ -27,16 +43,16 @@ const TORONTO_BUILDINGS = [
     {
         name: "TIM_HORTONS",
         art: [
-            "    ┌─✺─✺┐",
+            "┌✺─✺──✺─✺┐",
             "┌───┴┬───┘",
-            "│ TIMS   │",
-            "│COFFEE  │",
-            "│& FOOD  │",
+            "│ THE    │",
+            "│COMMON  │",
+            "│        │",
             "└────────┘"
         ]
     },
     {
-        name: "DEATHFACT",
+        name: "DEATH_FACT",
         art: [
             "┌────────┐",
             "│74^^^^^ │",
@@ -66,6 +82,17 @@ const TORONTO_BUILDINGS = [
             "└────────┘"
         ]
     },
+
+    {
+        name: "SWEATY_BETTYS",
+        art: [
+            "┌────────┐",
+            "│SWEATY  │",
+            "│BETTY'S │",
+            "│ *< >*  │",
+            "└────────┘"
+        ]
+    },
     {
         name: "LCBO",
         art: [
@@ -83,7 +110,7 @@ const TORONTO_BUILDINGS = [
             "⸨⎻⎻⎻◄o►⎻⎻⸩",
             "│ MIMI'S │",
             "│⊰PLACE⊱ │",
-            "│        │",
+            "│    ♡   │",
             "╚═⳺⳻⳺⳻⳺⳻═╝"
         ]
     },
@@ -141,13 +168,14 @@ const TORONTO_BUILDINGS = [
     },
     {
         name: "DOUBLEDOUBLELAND",
+        artist: "mclf",
         art: [
             "╒═════╤══╕",
             "│⋰⋱⋰⋱  │",
-            "│DOUBLE│ │",
-            "│DOUBLE│ │",
-            "│ LAND │ │",
-            "└──────┘ │"
+            "│ │DOUBLE│",
+            "│ │DOUBLE│",
+            "│ │LAND  │",
+            "└ └──────│"
         ]
     },
     {
@@ -237,12 +265,13 @@ const TORONTO_BUILDINGS = [
         ]
     },
     {
-        name: "SOYBOMBB",
+        name: "SOYBOMB",
+        artist: "mclf",
         art: [
             "┌◢╱╲◣◢╱╲◣",
-            "│SOY     │",
-            "│BOMB    │",
-            "│ !!!!!  │",
+            "│SOYBOMB │",
+            "│(     ) │",
+            "│ (___)  │",
             "└────────┘"
         ]
     },
@@ -260,10 +289,20 @@ const TORONTO_BUILDINGS = [
         name: "WHOSE_EMMA",
         art: [
             "┌────────┐",
-            "│ WHOSE  │",
+            "│ WHO'S  │",
             "│ EMMA   │",
             "│ <><>   │",
             "└────────┘"
+        ]
+    },
+    {
+        name: "RANSACK_THE_UNIVERSE",
+        art: [
+            "┌─━━━╋━━─┐",
+            "│RANSACK │",
+            "│THE     │",
+            "│UNIVERSE│",
+            "└∞──∞∞──∞┘"
         ]
     },
     {
@@ -272,7 +311,7 @@ const TORONTO_BUILDINGS = [
             "┌─◢───◣──┐",
             "│SNEAKY  │",
             "│ DEES   │",
-            "│ NACHOS │",
+            "│        │",
             "└─◥───◤──┘"
         ]
     },
@@ -309,7 +348,7 @@ const TORONTO_BUILDINGS = [
     {
         name: "THE_REX",
         art: [
-            "┌────────┐",
+            "┌◬◬◬◬◬◬◬◬┐",
             "│ THE    │",
             "│ REX    │",
             "│ JAZZ   │",
@@ -319,7 +358,7 @@ const TORONTO_BUILDINGS = [
     {
         name: "QUEENS_PARK",
         art: [
-            "┌────────┐",
+            "┌──⫷─⫸──┐",
             "│QUEENS  │",
             "│ PARK   │",
             "│ GREEN  │",
@@ -348,17 +387,17 @@ const TORONTO_BUILDINGS = [
             "└────────┘"
         ]
     },
-    {
-        name: "KENSINGTON_MARKET",
-        art: [
-            "┌────────┐",
-            "│KENSING │",
-            "│TON     │",
-            "│MARKET  │",
-            "│MARKET  │",
-            "└────────┘"
-        ]
-    },
+    // {
+    //     name: "KENSINGTON_MARKET",
+    //     art: [
+    //         "┌────────┐",
+    //         "│KENSING │",
+    //         "│TON     │",
+    //         "│MARKET  │",
+    //         "│MARKET  │",
+    //         "└────────┘"
+    //     ]
+    // },
     {
         name: "CASA_LOMA",
         art: [
@@ -390,16 +429,16 @@ const TORONTO_BUILDINGS = [
             "└────────┘"
         ]
     },
-    {
-        name: "CNE_EXHIBIT",
-        art: [
-            "┌✕─✕──✕─✕┐",
-            "│ CNE ░░ │",
-            "│EXHIBIT │",
-            "│ FUN ░░░│",
-            "└────────┘"
-        ]
-    },
+    // {
+    //     name: "CNE_EXHIBIT",
+    //     art: [
+    //         "┌✕─✕──✕─✕┐",
+    //         "│ CNE ░░ │",
+    //         "│EXHIBIT │",
+    //         "│ FUN ░░░│",
+    //         "└────────┘"
+    //     ]
+    // },
     {
         name: "OCAD",
         art: [
@@ -414,14 +453,14 @@ const TORONTO_BUILDINGS = [
         ]
     },
     {
-        name: "LO",
+        name: "OWLS_CLUB",
         art: [
-            "╭═╔════╗═╮",
-            "║│ ║║║  │║",
-            "║│ ║║║  │║",
+            "    ∆     ",
+            "  //║\\\  ",
+            "///║║║\\\\",
             "║░▒▓ █▓▒░║",
-            "║│ ║║║  │║",
-            "║│ ║║║  │║",
+            "║│ OWLS │║",
+            "║│ CLUB │║",
             "╚╩══════╩╝"
         ]
     },
@@ -546,6 +585,16 @@ const TORONTO_BUILDINGS = [
         ]
     },
     {
+        name: "NAZARETH",
+        art: [
+          "██████████",
+          "║ ░ ░░ ░ ║",
+          "║NAZARETH║",
+          "║ ▒▒▒▒▒▒ ║",
+          "╰────────╯",
+        ],
+      },
+    {
         name: "APT",
         art: [
             "▓▓▓▓▓▓▓▓▓▓",
@@ -571,6 +620,16 @@ const TORONTO_BUILDINGS = [
           "║ ❐ ❒❒ ❒ ║",
           "║ ❐ ❒❒ ❒ ║",
           "║ ══════ ║",
+          "╰╩╩╩╩╩╩╩╩╯",
+        ],
+      },
+      {
+        name: "VESTA_LUNCH",
+        art: [
+          "▓▓/▓|▓▓\▓▓",
+          "║ ❐ ❒❒ ❒ ║",
+          "║ VESTA  ║",
+          "║ LUNCH  ║",
           "╰╩╩╩╩╩╩╩╩╯",
         ],
       },
@@ -639,16 +698,17 @@ const TORONTO_BUILDINGS = [
           "╰╩╩╩╩╩╩╩╩╯",
         ],
       },
-    //   {
-    //     name: "APT7",
-    //     art: [
-    //       "▓▓▓▓▓▓▓▓▓▓",
-    //       "║ ≈ ≈≈ ≈ ║",
-    //       "║ ────── ║",
-    //       "║ ▒▒▒▒▒▒ ║",
-    //       "╰────────╯",
-    //     ],
-    //   },
+      {
+        name: "JANKIES_PLACE",
+        art: [
+          "▓▓▓▓▓▓▓▓▓▓",
+          "║ ▒▒▒▒▒▒ ║",
+          "║JANKIE'S║",
+          "║ ─PLACE-║",
+          "║ ▒▒▒▒▒▒ ║",   
+          "╰────────╯",
+        ],
+      },
       {
         name: "APT8",
         art: [
@@ -661,11 +721,11 @@ const TORONTO_BUILDINGS = [
         ],
       },
       {
-        name: "APT9",
+        name: "48_MILLION",
         art: [
           "██████████",
-          "║ ◆ ◆◆ ◆ ║",
-          "║ ◆ ◆◆ ◆ ║",
+          "║ ◆ 48 ◆ ║",
+          "║ MILLION║",
           "║ ══════ ║",
           "║ ▒▒▒▒▒▒ ║",
           "╰╩╩╩╩╩╩╩╩╯",
@@ -683,6 +743,18 @@ const TORONTO_BUILDINGS = [
           "╰╩╩╩╩╩╩╩╩╯",
         ],
       },
+      {
+        name: "180_NAIRN",
+        art: [
+             "    ||    ",
+             "  |    |  ",
+             " |      │ ",
+             "|  180   │",
+             "│  NAIRN |",
+             "╰────────╯"
+          ],
+      },
+  
       {
         name: "APT11",
         art: [
@@ -749,17 +821,41 @@ const TORONTO_BUILDINGS = [
             ":::::::::",
             "!       !",
             "!       !",
-            "! Pho   !",
-            "! Hung  !",
+            "! PHO   !",
+            "! HUNG  !",
             "!       !",
             "!       !",
             ":::::::::"
            
         ],
-    } 
+    },
+    {
+        name: "DUFFERIN_MALL",
+        art: [
+            "::::::::::",
+            "!        !",
+            "!DUFFERIN!",
+            "! MALL   !",
+            "!   __   !",
+            "!  :  :  !",
+            "!  :  :  !",
+            "::::  ::::"           
+        ],
+    },
+    {
+       	name: "TAROT_CARDS",
+   	    artist: "d6",
+   	    art: [
+           	" ◢⬒⬒◣◢⬒⬒◣",
+           	"◢⊞TAROT♀⊞◣",
+           	"││♂CARDS││",
+           	"││⊞⊞∏∏⊞⊞││",
+           	"╰┴──────┴╯"
+        ]
+    }
 ];
 
-console.log('Buildings loaded:', TORONTO_BUILDINGS.length);
+// console.log('Buildings loaded:', TORONTO_BUILDINGS.length);
 
 
 function checkBuildingWidth(buildings) {
@@ -768,10 +864,10 @@ function checkBuildingWidth(buildings) {
     );
 
     if (nonCompliantBuildings.length > 0) {
-        console.log("Non-compliant buildings (lines over 10 characters):");
+        // console.log("Non-compliant buildings (lines over 10 characters):");
         nonCompliantBuildings.forEach(building => console.log(building.name));
     } else {
-        console.log("All buildings are compliant.");
+        // console.log("All buildings are compliant.");
     }
 }
 

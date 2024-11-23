@@ -83,6 +83,12 @@ function distanceToOthers(obj) {
     return min;
 }
 
+function registerObject(factory, obj) {
+    factory.displayList.add(obj);
+    factory.scene.obstacles.add(obj);
+    return obj;
+}
+
 class MovingDeathMachine extends Phaser.GameObjects.Text {
     constructor(scene, y) {
         const x = (CONFIG.LANES.TRACKS + 1) * GRID_SIZE;
@@ -95,7 +101,7 @@ class MovingDeathMachine extends Phaser.GameObjects.Text {
 
 
     move() {
-        this.y -= GRID_SIZE;
+        this.y -= 1.5 * GRID_SIZE;
         if (this.y < -1 * this.height) {
             this.destroy();
         }
@@ -104,6 +110,54 @@ class MovingDeathMachine extends Phaser.GameObjects.Text {
 
 Phaser.GameObjects.GameObjectFactory.register('movingdeathmachine', function (y) {
     return registerObject(this, new MovingDeathMachine(this.scene, y));
+});
+
+class Wanderer extends Phaser.GameObjects.Text {
+    constructor(scene, y) {
+        const x = (CONFIG.LANES.SIDEWALK) * GRID_SIZE;
+        const colour = 'white';
+        super(scene, x, y, '', artConfig(colour));
+        setupArtObject(this, DARLINGS.WANDERER.UP.art);
+        setupPhysics(scene, this);
+        this.minDistance = Math.floor(Math.random() * 1);
+    }
+
+    move() {
+        this.y += 0.5 * GRID_SIZE;
+        if (this.y > GAME_HEIGHT) {
+            this.destroy();
+        }
+    }
+}
+
+Phaser.GameObjects.GameObjectFactory.register('wanderer', function (y) {
+    return registerObject(this, new Wanderer(this.scene, y));
+});
+
+
+
+
+class ParkedDeathMachine extends Phaser.GameObjects.Text {
+    constructor(scene, y) {
+        const x = (CONFIG.LANES.PARKED) * GRID_SIZE;
+        const colour = randomColour(COLOURS['VEHICLES']);
+        super(scene, x, y, '', artConfig(colour));
+        setupArtObject(this, DARLINGS.PARKED_DEATHMACHINE_STATES[0])
+        setupPhysics(scene, this);
+        this.state = 0;
+        this.minDistance = Math.floor(Math.random() * 4);
+    }
+
+    move() {
+        this.y -= GRID_SIZE;
+        if (this.y < -1 * this.height) {
+            this.destroy();
+        }
+    }
+}
+
+Phaser.GameObjects.GameObjectFactory.register('parkeddeathmachine', function (y) {
+    return registerObject(this, new ParkedDeathMachine(this.scene, y));
 });
 
 class TTC extends Phaser.GameObjects.Text {
@@ -116,19 +170,12 @@ class TTC extends Phaser.GameObjects.Text {
     }
 
     move() {
-        this.y -= GRID_SIZE;
+        this.y -= 1.5 * GRID_SIZE;
         if (this.y < -1 * this.height) {
             this.destroy();
         }
     }
 }
-
-function registerObject(factory, obj) {
-    factory.displayList.add(obj);
-    factory.scene.obstacles.add(obj);
-    return obj;
-}
-
 Phaser.GameObjects.GameObjectFactory.register('ttc', function (y) {
     return registerObject(this, new TTC(this.scene, y));
 });
@@ -345,7 +392,9 @@ function createSpawns(scene) {
     } else {
         trySpawning(scene.add.movingdeathmachine(GAME_HEIGHT))
     }
+    trySpawning(scene.add.parkeddeathmachine(GAME_HEIGHT))
     trySpawning(scene.add.oncomingdeathmachine(-GRID_SIZE * 5))
+    trySpawning(scene.add.wanderer(-GRID_SIZE * 1))
 }
 
 
