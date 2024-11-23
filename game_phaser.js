@@ -4,6 +4,7 @@ const GAME_HEIGHT = window.innerHeight;
 const GAME_WIDTH = GRID_SIZE * 30;
 const GAME_SPEED = 3; // frames per second
 const FONT = "Courier New";
+const MOVEMENT_INTERVAL = 1000 / GAME_SPEED;
 
 class BicycleGame extends Phaser.Game {
     constructor() {
@@ -78,25 +79,23 @@ class TTC extends Phaser.GameObjects.Text {
         super(scene, x, y, '', artConfig('red'));
         setupArtObject(this, DARLINGS.TTC.art);
         setupPhysics(scene, this);
-        this.moveDelay = 300;
-        this.nextMoveTime = scene.time.now + Math.random() * this.moveDelay * 8;
+        this.moveDelay = Math.floor(Math.random() * 8);
     }
 
-    preUpdate(time, _delta) {
-        if (time > this.nextMoveTime) {
-            this.y -= GRID_SIZE;
-            this.nextMoveTime = time + this.moveDelay;
+    move() {
+        if (this.moveDelay > 0) {
+            this.moveDelay--;
+            return;
         }
+        this.y -= GRID_SIZE;
         if (this.y < -1 * this.height) {
             this.destroy();
-            console.log('destroyed');
         }
     }
 }
 
 function registerObject(factory, obj) {
     factory.displayList.add(obj);
-    factory.updateList.add(obj);  // This line adds it to the update list
     factory.scene.obstacles.add(obj);
     return obj;
 }
@@ -112,15 +111,15 @@ class OncomingDeathMachine extends Phaser.GameObjects.Text {
         super(scene, x, y, '', artConfig('blue'));
         setupArtObject(this, DARLINGS.ONCOMINGDEATHMACHINE.art);
         setupPhysics(scene, this);
-        this.moveDelay = 200;
-        this.nextMoveTime = scene.time.now + Math.random() * this.moveDelay * 8;
+        this.moveDelay = Math.floor(Math.random() * 3);
     }
 
-    preUpdate (time, _delta) {
-        if (time > this.nextMoveTime) {
-            this.y += GRID_SIZE;
-            this.nextMoveTime = time + this.moveDelay;
+    move() {
+        if (this.moveDelay > 0) {
+            this.moveDelay--;
+            return;
         }
+        this.y += GRID_SIZE;
         if (this.y > GAME_HEIGHT) {
             this.destroy();
         }
@@ -209,11 +208,16 @@ class MainScene extends Phaser.Scene {
             }
         ).setOrigin(0.5).setVisible(false);
 
+        this.moveTimer = this.time.addEvent({
+            delay: MOVEMENT_INTERVAL,
+            callback: this.moveObstacles,
+            callbackScope: this,
+            loop: true
+        });
+
         // Controls
         this.spaceKey = this.input.keyboard.addKey('SPACE');
 
-        // Spawn manager
-        //this.spawnManager = new SpawnManager(this);
         this.setupTracks();
 
         // Game loop
@@ -222,6 +226,14 @@ class MainScene extends Phaser.Scene {
             callback: this.gameLoop,
             callbackScope: this,
             loop: true
+        });
+    }
+
+    moveObstacles() {
+        if (this.isGameOver) return;
+
+        this.obstacles.children.each(obstacle => {
+            obstacle.move();
         });
     }
 
@@ -240,9 +252,6 @@ class MainScene extends Phaser.Scene {
         this.score += 1;
         createSpawns(this);
         this.scoreText.setText(`Score: ${this.score}`);
-
-        //this.spawnManager.update(this.obstacles);
-        //this.renderSpawns();
     }
 
     setupTracks() {
@@ -292,7 +301,6 @@ class MainScene extends Phaser.Scene {
         this.bicycle.setPosition(5 * GRID_SIZE, 8 * GRID_SIZE);
         this.scoreText.setText('Score: 0');
         this.obstacles.clear(true, true);
-        this.spawnManager.clearSpawns();
     }
 }
 
@@ -304,7 +312,7 @@ function trySpawning(spawn) {
 
 function createSpawns(scene) {
     trySpawning(scene.add.ttc(GAME_HEIGHT))
-    trySpawning(scene.add.oncomingdeathmachine(-10))
+    trySpawning(scene.add.oncomingdeathmachine(-GRID_SIZE * 5))
 }
 
 
