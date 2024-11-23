@@ -1,49 +1,100 @@
 // Game Entities
 
-// art:
-// [" o ",
-// " ╪",
+// art: 
+// [" o ", 
+// " ╪", 
 // " o "],
 
 // console.log('Assets loaded:');
 
 
-const DARLINGS = {
-    BIKE: {
-        art:
-        [" O ",
-         "^|^",
-         " O "],
 
+
+const DARLINGS = {
+    // BIKE: {
+    //     art: 
+    //     [" 0 ", 
+    //      "^|^", 
+    //      " O "],
+
+    //     width: 3,
+    //     height: 3
+    // },
+    BIKE: {
+        art: 
+        ["_|_", 
+         "'o'", 
+         " ⍵ ",
+         " | "
+        ],
+        artBankLeft: [
+            "\/",
+            "/o ",
+            " ⍵ ",
+            " | "
+          ],
+          artBankRight: [
+            " \/",
+            " o\\",
+            " ⍵ ",
+            " | "
+          ],
         width: 3,
-        height: 3
+        height: 4
     },
+    
     WANDERER: {
+        SHAPES: [
+            "○", "o", "O", "o", "●", "✺", "✹" // Add more shapes as desired
+        ],
         UP: {
             art: [
-                "○",
-                "╽"
+                "○" 
             ],
             width: 1,
-            height: 2
+            height: 1
         },
         DOWN: {
             art: [
-                "○",
-                "╿"
+                "○" 
             ],
             width: 1,
-            height: 2
+            height: 1
         },
         CROSSING: {
             art: [
-                "○",
-                "╿"
+                "○" 
             ],
             width: 1,
-            height: 2
+            height: 1
         }
     },
+    // WANDERER: {
+    //     UP: {
+    //         art: [
+    //             "○", 
+    //             "╽"
+    //         ],
+    //         width: 1,
+    //         height: 2
+    //     },
+    //     DOWN: {
+    //         art: [
+    //             "○", 
+    //             "╿"
+    //         ],
+    //         width: 1,
+    //         height: 2
+    //     },
+    //     CROSSING: {
+    //         art: [
+    //             "○", 
+    //             "╿"
+    //         ],
+    //         width: 1,
+    //         height: 2
+    //     }
+    // },
     TTC: {
         art: [
             "┌0--─0┐",
@@ -62,36 +113,36 @@ const DARLINGS = {
 
     MOVINGDEATHMACHINE: {
         art: [
-            "┌.─.┐",
+            "┌⊚─⊚┐",
             "│▀▀▀│",
             "|   │",
             "│▀▀▀│",
             "╰───╯"
         ],
         width: 5,
-        height: 6
+        height: 5
     },
     ONCOMINGDEATHMACHINE: {
         art: [
             "┌───┐",
             "│▀▀▀│",
             "|   │",
-            "│▀▀▀│",
-            "╰.─.╯"
+            "│▀▀◚│",
+            "╰⊚─⊚╯"
         ],
         width: 5,
-        height: 6
+        height: 5
     },
     DEATHMACHINE: {
         art: [
-            " ┌.─.┐",
-            " │▀▀▀│",
-            " |   │ ",
-            " │▀▀▀│",
-            " ╰───╯"
+            "┌⊚─⊚┐",
+            "│▀▀▀│",
+            "|   │",
+            "│▀▀▀│",
+            "╰───╯"
         ],
-        width: 7,
-        height: 6
+        width: 5,
+        height: 5
     },
     PARKED_DEATHMACHINE_STATES: [
         // State 0: Closed
@@ -135,7 +186,7 @@ const DARLINGS = {
             "  ╰───╯ "
         ]
     ],
-
+    
     EXPLOSION: {
         art: ["\\|/", "-X-", "/|\\"],
         width: 4,
