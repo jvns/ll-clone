@@ -372,8 +372,8 @@ class MainScene extends Phaser.Scene {
 
         // Create TTC tracks
         const ttcTrackPositions = [
-            grid(CONFIG.LANES.TRACKS + 0.5),
-            grid(CONFIG.LANES.TRACKS + 5.5),
+            grid(CONFIG.LANES.TRACKS + 1),
+            grid(CONFIG.LANES.TRACKS + 5),
         ];
         ttcTrackPositions.forEach(x => {
             const track = this.add.text(x, 0, '‖\n'.repeat(60), artConfig("#444"));
