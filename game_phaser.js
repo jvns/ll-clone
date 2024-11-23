@@ -91,7 +91,7 @@ function registerObject(factory, obj) {
 
 class MovingDeathMachine extends Phaser.GameObjects.Text {
     constructor(scene, y) {
-        const x = (CONFIG.LANES.TRACKS - 0.5 ) * GRID_SIZE;
+        const x = (CONFIG.LANES.TRACKS - 0.4 ) * GRID_SIZE;
         const colour = pickRandom(COLOURS['VEHICLES']);
         super(scene, x, y, '', artConfig(colour));
         setupArtObject(this, DARLINGS.MOVINGDEATHMACHINE.art);
