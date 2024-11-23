@@ -364,7 +364,7 @@ class MainScene extends Phaser.Scene {
     setupTracks() {
         // Create road lines
         this.tracksContainer = this.add.container();
-        const roadLinePositions = [grid(CONFIG.LANES.DIVIDER + 0.3), grid(CONFIG.LANES.DIVIDER + 1,2)];
+        const roadLinePositions = [grid(CONFIG.LANES.DIVIDER), grid(CONFIG.LANES.DIVIDER + 1)];
         roadLinePositions.forEach(x => {
             const roadLine = this.add.text(x, 0, '‖\n'.repeat(60), artConfig('#fbfb00'));
             this.tracksContainer.add(roadLine);
