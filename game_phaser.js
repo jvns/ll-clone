@@ -91,7 +91,7 @@ function registerObject(factory, obj) {
 
 class MovingDeathMachine extends Phaser.GameObjects.Text {
     constructor(scene, y) {
-        const x = (CONFIG.LANES.TRACKS + 1) * GRID_SIZE;
+        const x = (CONFIG.LANES.TRACKS - 0.5 ) * GRID_SIZE;
         const colour = pickRandom(COLOURS['VEHICLES']);
         super(scene, x, y, '', artConfig(colour));
         setupArtObject(this, DARLINGS.MOVINGDEATHMACHINE.art);
@@ -367,8 +367,8 @@ class MainScene extends Phaser.Scene {
 
         // Create TTC tracks
         const ttcTrackPositions = [
-            (CONFIG.LANES.TRACKS + 1) * GRID_SIZE,
-            (CONFIG.LANES.TRACKS + 3) * GRID_SIZE
+            (CONFIG.LANES.TRACKS - 0.5) * GRID_SIZE,
+            (CONFIG.LANES.TRACKS + 2.5) * GRID_SIZE
         ];
         ttcTrackPositions.forEach(x => {
             const track = this.add.text(x, 0, '‖\n'.repeat(60), {
@@ -408,7 +408,7 @@ function trySpawning(spawn) {
 }
 
 function createSpawns(scene) {
-    if (Math.random() < 0.3) {
+    if (Math.random() < 0.4) {
         trySpawning(scene.add.ttc(GAME_HEIGHT))
     } else {
         trySpawning(scene.add.movingdeathmachine(GAME_HEIGHT))
