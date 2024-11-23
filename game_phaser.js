@@ -6,6 +6,8 @@ const GAME_SPEED = 3; // frames per second
 const FONT = "Courier New, monospace";
 const MOVEMENT_INTERVAL = 1000 / GAME_SPEED;
 
+const grid = (x) => x * GRID_SIZE;
+
 class BicycleGame extends Phaser.Game {
     constructor() {
         const config = {
@@ -35,7 +37,7 @@ class BicycleGame extends Phaser.Game {
 function artConfig(color) {
     return {
         fontFamily: FONT,
-        fontSize: GRID_SIZE,
+        fontSize: grid(1),
         color: color
     };
 }
@@ -86,7 +88,7 @@ function registerObject(factory, obj) {
 
 class MovingDeathMachine extends Phaser.GameObjects.Text {
     constructor(scene, y) {
-        const x = (CONFIG.LANES.TRACKS - 0.4 ) * GRID_SIZE;
+        const x = grid(CONFIG.LANES.TRACKS - 0.4 );
         const colour = pickRandom(COLOURS['VEHICLES']);
         const art = DARLINGS.MOVINGDEATHMACHINE.art.join("\n");
         super(scene, x, y, art, artConfig(colour));
@@ -96,7 +98,7 @@ class MovingDeathMachine extends Phaser.GameObjects.Text {
 
 
     move() {
-        this.y -= 2 * GRID_SIZE;
+        this.y -= grid(2)
         if (this.y < -1 * this.height) {
             this.destroy();
         }
@@ -109,7 +111,7 @@ Phaser.GameObjects.GameObjectFactory.register('movingdeathmachine', function (y)
 
 class Wanderer extends Phaser.GameObjects.Text {
     constructor(scene, y) {
-        const x = (CONFIG.LANES.SIDEWALK) * GRID_SIZE;
+        const x = grid(CONFIG.LANES.SIDEWALK);
         const colour = 'white';
         const art = DARLINGS.WANDERER.UP.art.join("\n");
         super(scene, x, y, art, artConfig(colour));
@@ -118,7 +120,7 @@ class Wanderer extends Phaser.GameObjects.Text {
     }
 
     move() {
-        this.y += 0.5 * GRID_SIZE;
+        this.y += grid(0.5);
         if (this.y > GAME_HEIGHT) {
             this.destroy();
         }
@@ -132,7 +134,7 @@ Phaser.GameObjects.GameObjectFactory.register('wanderer', function (y) {
 
 class Building extends Phaser.GameObjects.Text {
     constructor(scene, y) {
-        const x = (CONFIG.LANES.BUILDINGS) * GRID_SIZE;
+        const x = grid(CONFIG.LANES.BUILDINGS);
         const colour = pickRandom(COLOURS['BUILDINGS']);
         const art = pickRandom(TORONTO_BUILDINGS).art.join("\n");
         super(scene, x, y, art, artConfig(colour));
@@ -141,7 +143,7 @@ class Building extends Phaser.GameObjects.Text {
     }
 
     move() {
-        this.y += GRID_SIZE;
+        this.y += grid(1);
         if (this.y > GAME_HEIGHT) {
             this.destroy();
         }
@@ -154,7 +156,7 @@ Phaser.GameObjects.GameObjectFactory.register('building', function (y) {
 
 class ParkedDeathMachine extends Phaser.GameObjects.Text {
     constructor(scene, y) {
-        const x = (CONFIG.LANES.PARKED) * GRID_SIZE;
+        const x = grid(CONFIG.LANES.PARKED);
         const colour = pickRandom(COLOURS['VEHICLES']);
         const art = DARLINGS.PARKED_DEATHMACHINE_STATES[0].join("\n");
         super(scene, x, y, art, artConfig(colour));
@@ -164,7 +166,7 @@ class ParkedDeathMachine extends Phaser.GameObjects.Text {
     }
 
     move() {
-        this.y += GRID_SIZE;
+        this.y += grid(1);
         if (this.y > GAME_HEIGHT) {
             this.destroy();
         }
@@ -177,7 +179,7 @@ Phaser.GameObjects.GameObjectFactory.register('parkeddeathmachine', function (y)
 
 class TTC extends Phaser.GameObjects.Text {
     constructor(scene, y) {
-        const x = (CONFIG.LANES.TRACKS - 1) * GRID_SIZE;
+        const x = grid(CONFIG.LANES.TRACKS - 1);
         const art = DARLINGS.TTC.art.join("\n");
         super(scene, x, y, art, artConfig('red'));
         setupPhysics(scene, this);
@@ -185,7 +187,7 @@ class TTC extends Phaser.GameObjects.Text {
     }
 
     move() {
-        this.y -= 2 * GRID_SIZE;
+        this.y -= grid(2);
         if (this.y < -1 * this.height) {
             this.destroy();
         }
@@ -201,7 +203,7 @@ function pickRandom(list) {
 
 class OncomingDeathMachine extends Phaser.GameObjects.Text {
     constructor (scene, y) {
-        const x = (CONFIG.LANES.ONCOMING + 3) * GRID_SIZE;
+        const x = grid(CONFIG.LANES.ONCOMING + 3);
         const colour = pickRandom(COLOURS['VEHICLES']);
         const art = DARLINGS.ONCOMINGDEATHMACHINE.art.join("\n");
         super(scene, x, y, art, artConfig(colour));
@@ -210,7 +212,7 @@ class OncomingDeathMachine extends Phaser.GameObjects.Text {
     }
 
     move() {
-        this.y += GRID_SIZE;
+        this.y += grid(1);
         if (this.y > GAME_HEIGHT) {
             this.destroy();
         }
@@ -234,12 +236,12 @@ class Bicycle extends Phaser.GameObjects.Text {
         if (time > this.leftMoveTimer) {
             this.leftMoveTimer = time + this.moveDelay;
             if (this.cursors.left.isDown && this.x > 0) {
-                this.x -= GRID_SIZE;
+                this.x -= grid(1);
             }
         }
         if (time > this.rightMoveTimer) {
             if (this.cursors.right.isDown && this.x < GAME_WIDTH - GRID_SIZE) {
-                this.x += GRID_SIZE;
+                this.x += grid(1);
                 this.rightMoveTimer = time + this.moveDelay;
             }
         }
@@ -271,7 +273,7 @@ class MainScene extends Phaser.Scene {
 
     create() {
         // Create bicycle and enable physics for it
-        this.bicycle = this.add.bicycle(18 * GRID_SIZE, 12 * GRID_SIZE);
+        this.bicycle = this.add.bicycle(grid(18), grid(12));
         this.physics.world.enable(this.bicycle);
         this.bicycle.body.setSize(this.bicycle.width, this.bicycle.height);
 
@@ -348,7 +350,7 @@ class MainScene extends Phaser.Scene {
     setupTracks() {
         // Create road lines
         this.tracksContainer = this.add.container();
-        const roadLinePositions = [(CONFIG.LANES.DIVIDER + 0.5) * GRID_SIZE, (CONFIG.LANES.DIVIDER + 1) * GRID_SIZE];
+        const roadLinePositions = [grid(CONFIG.LANES.DIVIDER + 0.5), grid(CONFIG.LANES.DIVIDER + 1)];
         roadLinePositions.forEach(x => {
             const roadLine = this.add.text(x, 0, '‖\n'.repeat(60), {
                 fontFamily: FONT,
@@ -361,8 +363,8 @@ class MainScene extends Phaser.Scene {
 
         // Create TTC tracks
         const ttcTrackPositions = [
-            (CONFIG.LANES.TRACKS - 0.5) * GRID_SIZE,
-            (CONFIG.LANES.TRACKS + 2.5) * GRID_SIZE
+            grid(CONFIG.LANES.TRACKS - 0.5),
+            grid(CONFIG.LANES.TRACKS + 2.5),
         ];
         ttcTrackPositions.forEach(x => {
             const track = this.add.text(x, 0, '‖\n'.repeat(60), {
@@ -389,14 +391,14 @@ class MainScene extends Phaser.Scene {
         this.gameOverText.setVisible(false);
         this.bicycle.setTint(0xFFFFFF);
         this.bicycle.body.enable = true;
-        this.bicycle.setPosition(5 * GRID_SIZE, 8 * GRID_SIZE);
+        this.bicycle.setPosition(grid(18), grid(12));
         this.scoreText.setText('Score: 0');
         this.obstacles.clear(true, true);
     }
 }
 
 function trySpawning(spawn) {
-    if (distanceToOthers(spawn) < (spawn.minDistance + 1) * GRID_SIZE) {
+    if (distanceToOthers(spawn) < grid(spawn.minDistance + 1)) {
         spawn.destroy()
     }
 }
@@ -407,11 +409,11 @@ function createSpawns(scene) {
     } else {
         trySpawning(scene.add.movingdeathmachine(GAME_HEIGHT))
     }
-    trySpawning(scene.add.oncomingdeathmachine(-GRID_SIZE * 5))
-    trySpawning(scene.add.wanderer(-GRID_SIZE * 1))
+    trySpawning(scene.add.oncomingdeathmachine(grid(-5)))
+    trySpawning(scene.add.wanderer(grid(-1)));
 
-    trySpawning(scene.add.parkeddeathmachine(-GRID_SIZE * 5))
-    trySpawning(scene.add.building(-GRID_SIZE * 8))
+    trySpawning(scene.add.parkeddeathmachine(grid(-5)))
+    trySpawning(scene.add.building(grid(-8)))
 }
 
 
