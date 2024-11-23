@@ -38,13 +38,15 @@ function artConfig(color) {
     return {
         fontFamily: FONT,
         fontSize: grid(1),
-        color: color
+        color: color,
+        lineSpacing: grid(0.1),
     };
 }
 
 function setupPhysics(scene, textObject) {
     scene.physics.world.enable(textObject);
-    textObject.body.setSize(textObject.width, textObject.height);
+    textObject.body.setSize(textObject.width - grid(0.4), textObject.height - grid(0.4));
+    textObject.body.setOffset(grid(0.2), grid(0.2))
 }
 
 function distance(obs1, obs2) {
@@ -114,7 +116,7 @@ class Wanderer extends Phaser.GameObjects.Text {
         const x = grid(CONFIG.LANES.SIDEWALK);
         const colour = 'white';
         const art = DARLINGS.WANDERER.UP.art.join("\n");
-        super(scene, x, y, art, artConfig(colour));
+        super(scene, x, y, art,grid(0.2),artConfig(colour));
         setupPhysics(scene, this);
         this.minDistance = Math.floor(Math.random() * 1);
     }
@@ -350,14 +352,9 @@ class MainScene extends Phaser.Scene {
     setupTracks() {
         // Create road lines
         this.tracksContainer = this.add.container();
-        const roadLinePositions = [grid(CONFIG.LANES.DIVIDER + 0.5), grid(CONFIG.LANES.DIVIDER + 1)];
+        const roadLinePositions = [grid(CONFIG.LANES.DIVIDER + 0.3), grid(CONFIG.LANES.DIVIDER + 1,2)];
         roadLinePositions.forEach(x => {
-            const roadLine = this.add.text(x, 0, '‖\n'.repeat(60), {
-                fontFamily: FONT,
-                fontSize: GRID_SIZE,
-                color: '#fbfb00',
-                lineHeight: 16
-            });
+            const roadLine = this.add.text(x, 0, '‖\n'.repeat(60), artConfig('#fbfb00'));
             this.tracksContainer.add(roadLine);
         });
 
@@ -367,12 +364,7 @@ class MainScene extends Phaser.Scene {
             grid(CONFIG.LANES.TRACKS + 2.5),
         ];
         ttcTrackPositions.forEach(x => {
-            const track = this.add.text(x, 0, '‖\n'.repeat(60), {
-                fontFamily: FONT,
-                fontSize: GRID_SIZE,
-                color: '#444444',
-                lineHeight: 16
-            });
+            const track = this.add.text(x, 0, '‖\n'.repeat(60), artConfig("#444"));
             this.tracksContainer.add(track);
         });
     }
