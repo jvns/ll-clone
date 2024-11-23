@@ -3,7 +3,7 @@ const GRID_SIZE = 18;
 const GAME_HEIGHT = window.innerHeight;
 const GAME_WIDTH = GRID_SIZE * 42;
 const GAME_SPEED = 3; // frames per second
-const FONT = "Courier New";
+const FONT = "Courier New, monospace";
 const MOVEMENT_INTERVAL = 1000 / GAME_SPEED;
 
 class BicycleGame extends Phaser.Game {
