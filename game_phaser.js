@@ -18,6 +18,14 @@ function getCharWidth() {
     canvas.remove();
     return width;
 }
+function getCharHeight() {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    context.font = `${FONT_SIZE}px ${FONT}`;
+    const width = context.measureText('M').height;
+    canvas.remove();
+    return width;
+}
 
 class BicycleGame extends Phaser.Game {
     constructor() {
@@ -29,7 +37,7 @@ class BicycleGame extends Phaser.Game {
             physics: {
                 default: 'arcade',
                 arcade: {
-                    debug: true // Set to true to see collision boxes
+                    debug: false // Set to true to see collision boxes
                 }
             },
             scene: MainScene,
@@ -122,6 +130,42 @@ class SpawnManager {
     }
 }
 
+function getCoords(textObject) {
+    const coords = [];
+    const lines = textObject.text.split('\n');
+
+    lines.forEach((line, y) => {
+        [...line].forEach((character, x) => {
+            if (character !== ' ') {
+                coords.push({
+                    x: x + Math.round(textObject.x / GRID_SIZE),
+                    y: y + Math.round(textObject.y / GRID_SIZE),
+                    c: character,
+                });
+            }
+        });
+    });
+
+    return coords;
+}
+
+function checkActualHit(bicycle, obstacle) {
+    if (obstacle.constructor.name !== "ParkedDeathMachine") {
+        return true;
+    }
+    // ParkedDeathMachines get this special check because they can door you
+    const bicycleCoords = getCoords(bicycle);
+    const obstacleCoords = getCoords(obstacle);
+    for (const bCoord of bicycleCoords) {
+        for (const oCoord of obstacleCoords) {
+            if (bCoord.x === oCoord.x && bCoord.y === oCoord.y) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 // Register all the objects
 
 function registerObject(factory, obj) {
@@ -182,7 +226,7 @@ class MainScene extends Phaser.Scene {
 
         // Direct collision setup
         this.physics.add.collider(this.bicycle, this.obstacles, (bicycle, obstacle) => {
-            if (!this.isGameOver) {
+            if (!this.isGameOver && checkActualHit(bicycle, obstacle)) {
                 this.gameOver(bicycle, obstacle);
             }
         });

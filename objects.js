@@ -83,7 +83,18 @@ class ParkedDeathMachine extends Phaser.GameObjects.Text {
         this.minDistance = Math.floor(Math.random() * 4);
     }
 
+    advanceDoor() {
+        this.state++;
+        if (this.state >= DARLINGS.PARKED_DEATHMACHINE_STATES.length * 2) {
+            this.state = 0;
+        }
+        this.setText(DARLINGS.PARKED_DEATHMACHINE_STATES[Math.floor(this.state / 2)]);
+    }
+
     move() {
+        if ((Math.random() < 0.05) || this.state !== 0) {
+            this.advanceDoor();
+        }
         this.y += grid(2);
         if (this.y > GAME_HEIGHT) {
             this.destroy();
