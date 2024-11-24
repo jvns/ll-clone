@@ -181,8 +181,10 @@ class MainScene extends Phaser.Scene {
         this.obstacles = this.physics.add.group();
 
         // Direct collision setup
-        this.physics.add.collider(this.bicycle, this.obstacles, () => {
-            if (!this.isGameOver) this.gameOver();
+        this.physics.add.collider(this.bicycle, this.obstacles, (bicycle, obstacle) => {
+            if (!this.isGameOver) {
+                this.gameOver(bicycle, obstacle);
+            }
         });
 
         // UI elements
@@ -243,6 +245,33 @@ class MainScene extends Phaser.Scene {
         this.add.oncomingdeathmachine(grid(24))
     }
 
+    gameOver(bicycle, obstacle) {
+        bicycle.body.enable = false;
+        let deathMessage = 'GAME OVER';
+        // Different animations based on obstacle type
+        switch(obstacle.constructor.name) {
+            case 'Building':
+                deathMessage += ': BUILDING';
+                break;
+            case 'TTC':
+                deathMessage += ': TTC';
+                break;
+            case 'MovingDeathMachine':
+            case 'OncomingDeathMachine':
+                deathMessage += ': CAR';
+                break;
+            case 'ParkedDeathMachine':
+                deathMessage += ': PARKED CAR';
+                break;
+            case 'Wanderer':
+                break;
+        }
+        console.log("death", deathMessage);
+        this.gameOverText.setText(`${deathMessage}\nPress SPACE to restart`);
+        this.gameOverText.setVisible(true);
+        this.isGameOver = true;
+    }
+
     moveObstacles() {
         if (this.isGameOver) return;
 
@@ -286,14 +315,6 @@ class MainScene extends Phaser.Scene {
             const track = this.add.text(x, 0, '‖\n'.repeat(60), artConfig("#444"));
             this.tracksContainer.add(track);
         });
-    }
-
-    gameOver() {
-        this.isGameOver = true;
-        // clear update list
-        this.gameOverText.setVisible(true);
-        this.bicycle.setTint(0xFF0000);
-        this.bicycle.body.enable = false;
     }
 
     restart() {
