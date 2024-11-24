@@ -1,6 +1,6 @@
 // Game configuration
-const FONT_SIZE = 14;
-const GAME_HEIGHT = window.innerHeight;
+const FONT_SIZE = 14 * 3;
+const GAME_HEIGHT = window.innerHeight * 3;
 const GAME_SPEED = 4; // frames per second
 const FONT = "Courier New, monospace";
 const MOVEMENT_INTERVAL = 1000 / GAME_SPEED;
