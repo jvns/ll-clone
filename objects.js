@@ -129,7 +129,15 @@ class OncomingDeathMachine extends Phaser.GameObjects.Text {
 class Bicycle extends Phaser.GameObjects.Text {
     constructor (scene, x, y) {
         const art = DARLINGS.BIKE.art.join("\n");
-        super(scene, x, y, art, artConfig('#00FF00'));
+        super(scene, x, y, art, artConfig('white'));
+        const gradient = this.context.createLinearGradient(0, 0, this.width, this.height);
+        gradient.addColorStop(0, '#ff0000');    // red
+        gradient.addColorStop(0.33, '#ffa500');  // orange
+        gradient.addColorStop(0.66, '#00ffff');  // cyan
+        gradient.addColorStop(1, '#ee82ee');    // violet
+
+        // Apply the gradient
+        this.setFill(gradient);
         this.leftMoveTimer = 0;
         this.rightMoveTimer = 0;
         this.cursors = scene.input.keyboard.createCursorKeys();
