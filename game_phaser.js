@@ -46,6 +46,9 @@ class BicycleGame extends Phaser.Game {
 }
 
 class SpawnManager {
+    constructor() {
+        this.next_vehicle = 'car';
+    }
     static distance(obs1, obs2) {
         if (obs1.x >= obs2.x + obs2.width || obs1.x + obs1.width <= obs2.x) {
             return Infinity;
@@ -83,7 +86,39 @@ class SpawnManager {
         const dist = SpawnManager.distanceToOthers(spawn);
         if (dist < grid(spawn.minDistance + 1)) {
             spawn.destroy()
+            return false
         }
+        return true
+    }
+
+    spawnVehicle(scene) {
+        let vehicle;
+        switch (this.next_vehicle) {
+            case 'car':
+                vehicle = scene.add.movingdeathmachine(GAME_HEIGHT);
+                break;
+            case 'ttc':
+                vehicle = scene.add.ttc(GAME_HEIGHT);
+                break;
+            default:
+                console.error('Invalid vehicle type');
+        }
+        const success = SpawnManager.trySpawning(vehicle);
+        if (success) {
+            if (Math.random() < 0.3) {
+                this.next_vehicle = 'ttc';
+            } else {
+                this.next_vehicle = 'car';
+            }
+        }
+    }
+
+    createSpawns(scene) {
+        this.spawnVehicle(scene);
+        SpawnManager.trySpawning(scene.add.oncomingdeathmachine(grid(-5)))
+        SpawnManager.trySpawning(scene.add.wanderer(grid(-1)));
+        SpawnManager.trySpawning(scene.add.parkeddeathmachine(grid(-8)));
+        SpawnManager.trySpawning(scene.add.building(grid(-12)))
     }
 }
 
@@ -133,6 +168,7 @@ class MainScene extends Phaser.Scene {
         this.score = 0;
         this.isGameOver = false;
         this.moveDelay = 200; // Delay between moves in milliseconds
+        this.sm = new SpawnManager();
     }
 
     create() {
@@ -228,20 +264,8 @@ class MainScene extends Phaser.Scene {
         if (this.isGameOver) return;
 
         this.score += 1;
-        this.createSpawns();
+        this.sm.createSpawns(this);
         this.scoreText.setText(`Score: ${this.score}`);
-    }
-
-    createSpawns() {
-        if (Math.random() < 0.4) {
-            SpawnManager.trySpawning(this.add.ttc(GAME_HEIGHT))
-        } else {
-            SpawnManager.trySpawning(this.add.movingdeathmachine(GAME_HEIGHT))
-        }
-        SpawnManager.trySpawning(this.add.oncomingdeathmachine(grid(-5)))
-        SpawnManager.trySpawning(this.add.wanderer(grid(-1)));
-        SpawnManager.trySpawning(this.add.parkeddeathmachine(grid(-8)));
-        SpawnManager.trySpawning(this.add.building(grid(-12)))
     }
 
     setupTracks() {

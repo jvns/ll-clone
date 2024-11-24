@@ -24,7 +24,7 @@ class MovingDeathMachine extends Phaser.GameObjects.Text {
         const art = DARLINGS.MOVINGDEATHMACHINE.art.join("\n");
         super(scene, x, y, art, artConfig(colour));
         setupPhysics(scene, this);
-        this.minDistance = Math.floor(Math.random() * 4);
+        this.minDistance = 5 + Math.floor(Math.random() * 4);
     }
 
 
@@ -97,7 +97,7 @@ class TTC extends Phaser.GameObjects.Text {
         const art = DARLINGS.TTC.art.join("\n");
         super(scene, x, y, art, artConfig('red'));
         setupPhysics(scene, this);
-        this.minDistance = Math.floor(Math.random() * 4);
+        this.minDistance = 5 + Math.floor(Math.random() * 4);
     }
 
     move() {
@@ -115,7 +115,7 @@ class OncomingDeathMachine extends Phaser.GameObjects.Text {
         const art = DARLINGS.ONCOMINGDEATHMACHINE.art.join("\n");
         super(scene, x, y, art, artConfig(colour));
         setupPhysics(scene, this);
-        this.minDistance = Math.floor(Math.random() * 3);
+        this.minDistance = Math.floor(Math.random() * 8) + 1;
     }
 
     move() {
