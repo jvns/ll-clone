@@ -1,11 +1,10 @@
 // Game configuration
 const FONT_SIZE = 14 * 3;
-const GAME_HEIGHT = window.innerHeight * 3;
+const GAME_HEIGHT = window.innerHeight * 2.5;
 const GAME_SPEED = 4; // frames per second
 const FONT = "Courier New, monospace";
 const MOVEMENT_INTERVAL = 1000 / GAME_SPEED;
 const GRID_SIZE = getCharWidth();
-
 const GAME_WIDTH = GRID_SIZE * 42;
 
 const grid = (x) => x * GRID_SIZE;
@@ -46,53 +45,49 @@ class BicycleGame extends Phaser.Game {
     }
 }
 
-function artConfig(color) {
-    return {
-        fontFamily: FONT,
-        fontSize: FONT_SIZE,
-        color: color,
-        lineSpacing: FONT_SIZE * 0.2,
-    };
-}
-
-function setupPhysics(scene, textObject) {
-    scene.physics.world.enable(textObject);
-    textObject.body.setSize(textObject.width - grid(0.6), textObject.height);
-    textObject.body.setOffset(grid(0.3), 0);
-}
-
-function distance(obs1, obs2) {
-    if (obs1.x >= obs2.x + obs2.width || obs1.x + obs1.width <= obs2.x) {
-        return Infinity;
-    }
-
-    // Get vertical distance considering object heights
-    // If obs1 is above obs2
-    if (obs1.y + obs1.height <= obs2.y) {
-        return obs2.y - (obs1.y + obs1.height);
-    }
-    // If obs2 is above obs1
-    else if (obs2.y + obs2.height <= obs1.y) {
-        return obs1.y - (obs2.y + obs2.height);
-    }
-    // If objects overlap vertically
-    return 0;
-}
-
-function distanceToOthers(obj) {
-    const obstacles = obj.scene.obstacles;
-    let min = Infinity;
-    for (const obs of obstacles.children.entries) {
-        if (obs === obj) {
-            continue;
+class SpawnManager {
+    static distance(obs1, obs2) {
+        if (obs1.x >= obs2.x + obs2.width || obs1.x + obs1.width <= obs2.x) {
+            return Infinity;
         }
-        const dist = distance(obj, obs);
-        if (dist < min) {
-            min = dist;
+
+        // Get vertical distance considering object heights
+        // If obs1 is above obs2
+        if (obs1.y + obs1.height <= obs2.y) {
+            return obs2.y - (obs1.y + obs1.height);
+        }
+        // If obs2 is above obs1
+        else if (obs2.y + obs2.height <= obs1.y) {
+            return obs1.y - (obs2.y + obs2.height);
+        }
+        // If objects overlap vertically
+        return 0;
+    }
+
+    static distanceToOthers(obj) {
+        const obstacles = obj.scene.obstacles;
+        let min = Infinity;
+        for (const obs of obstacles.children.entries) {
+            if (obs === obj) {
+                continue;
+            }
+            const dist = SpawnManager.distance(obj, obs);
+            if (dist < min) {
+                min = dist;
+            }
+        }
+        return min;
+    }
+
+    static trySpawning(spawn) {
+        const dist = SpawnManager.distanceToOthers(spawn);
+        if (dist < grid(spawn.minDistance + 1)) {
+            spawn.destroy()
         }
     }
-    return min;
 }
+
+// Register all the objects
 
 function registerObject(factory, obj) {
     factory.displayList.add(obj);
@@ -100,174 +95,29 @@ function registerObject(factory, obj) {
     return obj;
 }
 
-class MovingDeathMachine extends Phaser.GameObjects.Text {
-    constructor(scene, y) {
-        const x = grid(CONFIG.LANES.TRACKS + 1 );
-        const colour = pickRandom(COLOURS['VEHICLES']);
-        const art = DARLINGS.MOVINGDEATHMACHINE.art.join("\n");
-        super(scene, x, y, art, artConfig(colour));
-        setupPhysics(scene, this);
-        this.minDistance = Math.floor(Math.random() * 4);
-    }
-
-
-    move() {
-        this.y -= grid(2)
-        if (this.y < -1 * this.height) {
-            this.destroy();
-        }
-    }
-}
-
 Phaser.GameObjects.GameObjectFactory.register('movingdeathmachine', function (y) {
     return registerObject(this, new MovingDeathMachine(this.scene, y));
 });
-
-class Wanderer extends Phaser.GameObjects.Text {
-    constructor(scene, y) {
-        const x = grid(CONFIG.LANES.SIDEWALK + .2);
-        const colour = 'white';
-        const art = DARLINGS.WANDERER.UP.art.join("\n");
-        super(scene, x, y, art,grid(0.2),artConfig(colour));
-        setupPhysics(scene, this);
-        this.minDistance = Math.floor(Math.random() * 1);
-    }
-
-    move() {
-        this.y += grid(0.5);
-        if (this.y > GAME_HEIGHT) {
-            this.destroy();
-        }
-    }
-}
 
 Phaser.GameObjects.GameObjectFactory.register('wanderer', function (y) {
     return registerObject(this, new Wanderer(this.scene, y));
 });
 
-
-class Building extends Phaser.GameObjects.Text {
-    constructor(scene, y) {
-        const x = grid(CONFIG.LANES.BUILDINGS);
-        const colour = pickRandom(COLOURS['BUILDINGS']);
-        const art = pickRandom(TORONTO_BUILDINGS).art.join("\n");
-        super(scene, x, y, art, artConfig(colour));
-        setupPhysics(scene, this);
-        this.minDistance = 0;
-    }
-
-    move() {
-        this.y += grid(2);
-        if (this.y > GAME_HEIGHT) {
-            this.destroy();
-        }
-    }
-}
-
 Phaser.GameObjects.GameObjectFactory.register('building', function (y) {
     return registerObject(this, new Building(this.scene, y));
 });
-
-class ParkedDeathMachine extends Phaser.GameObjects.Text {
-    constructor(scene, y) {
-        const x = grid(CONFIG.LANES.PARKED);
-        const colour = pickRandom(COLOURS['VEHICLES']);
-        const art = DARLINGS.PARKED_DEATHMACHINE_STATES[0].join("\n");
-        super(scene, x, y, art, artConfig(colour));
-        setupPhysics(scene, this);
-        this.state = 0;
-        this.minDistance = Math.floor(Math.random() * 4);
-    }
-
-    move() {
-        this.y += grid(2);
-        if (this.y > GAME_HEIGHT) {
-            this.destroy();
-        }
-    }
-}
 
 Phaser.GameObjects.GameObjectFactory.register('parkeddeathmachine', function (y) {
     return registerObject(this, new ParkedDeathMachine(this.scene, y));
 });
 
-class TTC extends Phaser.GameObjects.Text {
-    constructor(scene, y) {
-        const x = grid(CONFIG.LANES.TRACKS);
-        const art = DARLINGS.TTC.art.join("\n");
-        super(scene, x, y, art, artConfig('red'));
-        setupPhysics(scene, this);
-        this.minDistance = Math.floor(Math.random() * 4);
-    }
-
-    move() {
-        this.y -= grid(2);
-        if (this.y < -1 * this.height) {
-            this.destroy();
-        }
-    }
-}
 Phaser.GameObjects.GameObjectFactory.register('ttc', function (y) {
     return registerObject(this, new TTC(this.scene, y));
 });
 
-function pickRandom(list) {
-    return list[Math.floor(Math.random() * list.length)];
-}
-
-class OncomingDeathMachine extends Phaser.GameObjects.Text {
-    constructor (scene, y) {
-        const x = grid(CONFIG.LANES.ONCOMING);
-        const colour = pickRandom(COLOURS['VEHICLES']);
-        const art = DARLINGS.ONCOMINGDEATHMACHINE.art.join("\n");
-        super(scene, x, y, art, artConfig(colour));
-        setupPhysics(scene, this);
-        this.minDistance = Math.floor(Math.random() * 3);
-    }
-
-    move() {
-        this.y += grid(2.5);
-        if (this.y > GAME_HEIGHT) {
-            this.destroy();
-        }
-    }
-}
-
 Phaser.GameObjects.GameObjectFactory.register('oncomingdeathmachine', function (y) {
     return registerObject(this, new OncomingDeathMachine(this.scene, y));
 });
-
-class Bicycle extends Phaser.GameObjects.Text {
-    constructor (scene, x, y) {
-        const art = DARLINGS.BIKE.art.join("\n");
-        super(scene, x, y, art, artConfig('#00FF00'));
-        this.leftMoveTimer = 0;
-        this.rightMoveTimer = 0;
-        this.cursors = scene.input.keyboard.createCursorKeys();
-    }
-
-    preUpdate (time, _delta) {
-        if (time > this.leftMoveTimer) {
-            this.leftMoveTimer = time + this.moveDelay;
-            if (this.cursors.left.isDown && this.x > 0) {
-                this.x -= grid(1);
-            }
-        }
-        if (time > this.rightMoveTimer) {
-            if (this.cursors.right.isDown && this.x < GAME_WIDTH - GRID_SIZE) {
-                this.x += grid(1);
-                this.rightMoveTimer = time + this.moveDelay;
-            }
-        }
-
-        if (this.cursors.left.isUp) {
-            this.leftMoveTimer = 0;
-        }
-        if (this.cursors.right.isUp) {
-            this.rightMoveTimer = 0;
-        }
-    }
-}
 
 Phaser.GameObjects.GameObjectFactory.register('bicycle', function (x, y) {
     const obj = new Bicycle(this.scene, x, y);
@@ -302,14 +152,14 @@ class MainScene extends Phaser.Scene {
         // UI elements
         this.scoreText = this.add.text(10, 10, 'Score: 0', {
             fontFamily: FONT,
-            fontSize: GRID_SIZE,
+            fontSize: FONT_SIZE,
             color: '#00FF00'
         });
 
         this.gameOverText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2,
             'GAME OVER\nPress SPACE to restart', {
                 fontFamily: FONT,
-                fontSize: GRID_SIZE * 2,
+                fontSize: FONT_SIZE * 2,
                 color: '#FF0000',
                 align: 'center'
             }
@@ -378,8 +228,20 @@ class MainScene extends Phaser.Scene {
         if (this.isGameOver) return;
 
         this.score += 1;
-        createSpawns(this);
+        this.createSpawns();
         this.scoreText.setText(`Score: ${this.score}`);
+    }
+
+    createSpawns() {
+        if (Math.random() < 0.4) {
+            SpawnManager.trySpawning(this.add.ttc(GAME_HEIGHT))
+        } else {
+            SpawnManager.trySpawning(this.add.movingdeathmachine(GAME_HEIGHT))
+        }
+        SpawnManager.trySpawning(this.add.oncomingdeathmachine(grid(-5)))
+        SpawnManager.trySpawning(this.add.wanderer(grid(-1)));
+        SpawnManager.trySpawning(this.add.parkeddeathmachine(grid(-8)));
+        SpawnManager.trySpawning(this.add.building(grid(-12)))
     }
 
     setupTracks() {
@@ -421,28 +283,6 @@ class MainScene extends Phaser.Scene {
         this.obstacles.clear(true, true);
     }
 }
-
-function trySpawning(spawn) {
-    const dist = distanceToOthers(spawn);
-    if (dist < grid(spawn.minDistance + 1)) {
-        spawn.destroy()
-    }
-}
-
-
-function createSpawns(scene) {
-    if (Math.random() < 0.4) {
-        trySpawning(scene.add.ttc(GAME_HEIGHT))
-    } else {
-        trySpawning(scene.add.movingdeathmachine(GAME_HEIGHT))
-    }
-    trySpawning(scene.add.oncomingdeathmachine(grid(-5)))
-    trySpawning(scene.add.wanderer(grid(-1)));
-
-    trySpawning(scene.add.parkeddeathmachine(grid(-8)));
-    trySpawning(scene.add.building(grid(-12)))
-}
-
 
 // Initialize and start the game
 window.addEventListener('load', () => new BicycleGame());
